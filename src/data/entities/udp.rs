@@ -1,24 +1,56 @@
+use std::io::{self, Error};
+use tokio::net::UdpSocket;
+
 pub struct UDP {
-    port: u32,
-    address: String,
+    socket: UdpSocket,
 }
 
-trait UDPMethod {
-    fn send(&self, message: String);
-    fn receive(&self) -> String;
+pub trait UDPMethod {
+    async fn send(&self, message: String) -> Result<usize, Error>;
+    async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error>;
+    async fn receive(&self) ->Result<(String, String), Error> ;
 }
 
 impl UDP {
-    pub fn new(port: u32, address: String) -> UDP {
-        UDP {
-            port,
-            address,
-        }
+    pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
+        let socket = UdpSocket::bind(format!("{}:{}", address, port)).await?;
+        Ok(UDP { socket })
     }
     pub fn port(&self) -> u32 {
-        self.port
+        self.socket.local_addr().unwrap().port() as u32
     }
     pub fn address(&self) -> String {
-        self.address
+        self.socket.local_addr().unwrap().ip().to_string()
+    }
+}
+
+impl UDPMethod for UDP {
+    async fn send(&self, message: String) -> Result<usize, Error> {
+        Ok(self
+            .socket
+            .send_to(message.as_bytes(), self.address())
+            .await?)
+    }
+
+    async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error> {
+        Ok(self.socket.connect(ip_addr).await?)
+    }
+
+    async fn receive(&self) -> Result<(String, String), Error> {
+        let mut message = Vec::new();
+        let mut buf = [0; 8192];
+        let mut source = String::new();
+
+        match self.socket.recv_from(&mut buf).await? {
+            (n, addr) => {
+                message.extend_from_slice(&buf[..n]);
+                source = addr.ip().to_string();
+            }
+            // Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+            //     continue;
+            // }
+            e => return Err(Error::new(io::ErrorKind::BrokenPipe,e.1.ip().to_string())),
+        }
+        Ok((String::from_utf8_lossy(&message).to_string(),source))
     }
 }

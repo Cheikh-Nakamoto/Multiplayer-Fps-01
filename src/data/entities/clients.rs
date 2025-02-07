@@ -1,31 +1,23 @@
-use super::udp::UDP;
-pub struct Client {
-    ip_address: String,
-    username: String,
-    network: UDP,
-}
+use super::{player::Player, udp::UDP};
 
-trait ClientMethod {
-    fn connect(&self, ip_address: String) -> bool;
-    fn send_message(&self, message: String);
-    fn receive_message(&self) -> String;
+pub struct Client {
+    username: String,
+    player: Player,
+    pub network: UDP,
 }
 
 impl Client {
-    pub fn new(ip_address: String, username: String, network: UDP) -> Client {
+    pub fn new(username: String, player: Player, network: UDP) -> Client {
         Client {
-            ip_address,
             username,
+            player,
             network,
         }
     }
     pub fn ip_address(&self) -> String {
-        self.ip_address
+        self.network.address()
     }
     pub fn username(&self) -> String {
-        self.username
-    }
-    pub fn network(&self) -> UDP {
-        self.network
+        self.username.clone()
     }
 }

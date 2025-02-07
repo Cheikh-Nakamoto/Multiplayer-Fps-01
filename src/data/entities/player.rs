@@ -1,6 +1,8 @@
+use crate::Vec3;
+
 pub struct Player {
-    position: (f32, f32),
-    direction: f32,
+    position: Vec3,
+    dimension: Vec3,
     health: u32
 }
 
@@ -11,27 +13,27 @@ trait PlayerMethod {
 }
 
 impl Player {
-    pub fn new(position: (f32, f32), direction: f32, health: u32) -> Player {
+    pub fn new(position: Vec3, dimension: Vec3, health: u32) -> Player {
         Player {
-            position,
-            direction,
-            health
+            position ,
+            dimension ,
+            health 
         }
     }
-    pub fn position(&self) -> (f32, f32) {
+    pub fn position(&self) -> Vec3 {
         self.position
     }
-    pub fn direction(&self) -> f32 {
-        self.direction
+    pub fn dimension(&self) -> Vec3 {
+        self.dimension
     }
     pub fn health(&self) -> u32 {
         self.health
     }
-    pub fn set_position(&mut self, position: (f32, f32)) {
+    pub fn set_position(&mut self, position: Vec3) {
         self.position = position;
     }
-    pub fn set_direction(&mut self, direction: f32) {
-        self.direction = direction;
+    pub fn set_direction(&mut self, dimension: Vec3) {
+        self.dimension = dimension;
     }
     pub fn set_health(&mut self, health: u32) {
         self.health = health;

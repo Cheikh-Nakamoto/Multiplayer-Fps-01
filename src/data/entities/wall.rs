@@ -1,28 +1,30 @@
-use std::texture::Texture;
+// use bevy::render::render_resource::Texture;
+use crate::Vec3;
+use std::{io::Error};
 
 pub struct Wall {
-    position: (f32, f32),
+    position: Vec3,
     width: f32,
     height: f32,
-    texture: Texture,
+    //texture: Texture,
 }
 
 
-trait WallMethod {
-    fn collides(&self, other: &Wall) -> bool;
+pub trait WallMethod {
+    fn collides(&self, position: Vec3) -> Result<(), String>;
     fn render(&self);
 }
 
 impl Wall {
-    pub fn new(position: (f32, f32), width: f32, height: f32, texture: Texture) -> Wall {
+    pub fn new(position: Vec3, width: f32, height: f32) -> Wall {
         Wall {
             position,
             width,
             height,
-            texture,
+          //  texture,
         }
     }
-    pub fn position(&self) -> (f32, f32) {
+    pub fn position(&self) -> Vec3 {
         self.position
     }
     pub fn width(&self) -> f32 {
@@ -31,7 +33,25 @@ impl Wall {
     pub fn height(&self) -> f32 {
         self.height
     }
-    pub fn texture(&self) -> Texture {
-        self.texture
+}
+
+impl  WallMethod for Wall {
+
+    fn collides(&self, position: Vec3) -> Result<(), String> {
+        if position.x >= self.position.x 
+            && position.x <= self.position.x + self.width
+            && position.y >= self.position.y 
+            && position.y <= self.position.y + self.width
+            && position.z >= self.position.z 
+            && position.z <= self.position.z + self.width {
+            Ok(()) 
+        } else {
+            Err("Colision".to_string()) 
+        }
     }
+
+    fn render(&self) {
+
+    }
+    
 }

@@ -1,17 +1,16 @@
-use super::{Player, Maze};
+use super::{maze::Maze, player::Player};
+
 pub struct Game {
     players: Vec<Player>,
     maze: Maze,
     level: u32,
 }
 
-
 trait GameMethod {
     fn update(&self);
     fn check_collision(&self);
     fn spawn_player(&self);
 }
-
 
 impl Game {
     pub fn new() -> Game {

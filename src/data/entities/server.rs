@@ -1,16 +1,21 @@
-use super::{Player, Game, UDP};
-use std::net::TcpStream as Stream;
+use std::{io::Error, net::UdpSocket};
+
+use super::{
+    game::Game,
+    player::Player,
+    udp::{UDPMethod, UDP},
+};
 pub struct Server {
     clients: Vec<Player>,
     game: Game,
-    network: UDP,
+    pub network: UDP,
 }
 
-
-trait ServerMethod {
-    fn accept(&self, stream: Stream) -> bool;
+pub trait ServerMethod {
+    fn accept(&self, stream: UdpSocket) -> Result<(), Error>;
     fn broadcast(&self, message: String);
     fn manage_levels(&self);
+    async fn run(&self);
 }
 
 impl Server {
@@ -27,7 +32,25 @@ impl Server {
     pub fn game(&self) -> &Game {
         &self.game
     }
-    pub fn network(&self) -> UDP {
-        self.network
+}
+
+impl ServerMethod for Server {
+    fn accept(&self, stream: UdpSocket) -> Result<(), Error> {
+        Ok(())
+    }
+    fn broadcast(&self, message: String) {}
+    fn manage_levels(&self) {}
+
+    async fn run(&self) {
+        loop {
+            match self.network.receive().await {
+                Ok((message,addr)) => {
+                    println!("message recus: {} sur l'address {}", message,addr);
+                }
+                Err(e) => {
+                    println!("error{}",e);
+                }
+            }
+        }
     }
 }
