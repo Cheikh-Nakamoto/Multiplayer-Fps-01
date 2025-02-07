@@ -3,3 +3,7 @@
 multiplay*
 tes*
 progra*
+
+# Added by cargo
+
+/target
