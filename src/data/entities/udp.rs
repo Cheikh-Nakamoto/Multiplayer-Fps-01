@@ -13,7 +13,8 @@ pub trait UDPMethod {
 
 impl UDP {
     pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
-        let socket = UdpSocket::bind(format!("{}:{}", address, port)).await?;
+        let socket = UdpSocket::bind("0.0.0.0:8080").await?;
+        socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
     pub fn port(&self) -> u32 {
@@ -25,13 +26,17 @@ impl UDP {
 }
 
 impl UDPMethod for UDP {
-    async fn send(&self, message: String, addr :String) -> Result<usize, Error> {
-        println!("message {} ip {}", message, addr);
-        Ok(self
-            .socket
-            .send_to(message.as_bytes(), addr)
-            .await?)
+    async fn send(&self, message: String, addr: String) -> Result<usize, Error> {
+        println!("Message envoyé : {} vers {}", message, addr);
+        let addr_with_port = if !addr.contains(":") {
+            format!("{}:8080", addr) // Ajoute le port 8080 par défaut
+        } else {
+            addr
+        };
+
+        Ok(self.socket.send_to(message.as_bytes(), addr_with_port).await?)
     }
+
 
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error> {
         Ok(self.socket.connect(ip_addr).await?)
