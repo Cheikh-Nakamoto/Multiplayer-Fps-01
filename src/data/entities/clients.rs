@@ -9,12 +9,12 @@ pub struct Client {
     pub network: UDP,
 }
 
-pub trait ClientMethods {
+/*pub trait ClientMethods {
     fn update(&mut self);
     fn collect() -> Result<String,String>;
     fn connect(&self) -> Result<(String, String),Error>;
 }
-
+*/
 impl Client {
     pub fn new(username: String, player: Player, network: UDP) -> Client {
         Client {
@@ -38,7 +38,7 @@ impl Client {
     }
 }
 
-impl ClientMethods for Client {
+/*impl ClientMethods for Client {
     fn update(&mut self) {
         self.player.move_to(1.0, 1.0);
     }
@@ -62,3 +62,4 @@ impl ClientMethods for Client {
         todo!()
     }
 }
+*/

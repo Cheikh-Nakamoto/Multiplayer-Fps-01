@@ -19,8 +19,7 @@ pub trait ServerMethod {
 }
 
 impl Server {
-    pub async fn new(clients: Vec<Player>, game: Game, network: UDP) -> Server {
-        // Joindre le groupe multicast
+    pub fn new(clients: Vec<Player>, game: Game, network: UDP) -> Server {
         Server {
             clients,
             game,
@@ -39,7 +38,9 @@ impl ServerMethod for Server {
     fn accept(&self, stream: UdpSocket) -> Result<(), Error> {
         Ok(())
     }
-    fn broadcast(&self, message: String) {}
+    fn broadcast(&self, message: String) {
+        todo!()
+    }
     fn manage_levels(&self) {}
 
     async fn run(&self) {
