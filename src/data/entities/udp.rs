@@ -11,10 +11,24 @@ pub trait UDPMethod {
 }
 
 impl UDP {
-    pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
-        let socket = UdpSocket::bind(format!("{}:{}", address, port)).await?;
-        socket.set_broadcast(true)?; // Permettre la réception en broadcast
-        Ok(UDP { socket })
+    pub async fn new(port: u32, _address: &str) -> Result<UDP, Error> {
+        // Essayer d'abord IPv6
+        let ipv6_addr = format!("[::]:{}", port);
+        match UdpSocket::bind(&ipv6_addr).await {
+            Ok(socket) => {
+                socket.set_broadcast(true)?;
+                println!("✅ Bound to IPv6 address: {}", ipv6_addr);
+                Ok(UDP { socket })
+            }
+            Err(_) => {
+                // Fallback to IPv4
+                let ipv4_addr = format!("0.0.0.0:{}", port);
+                let socket = UdpSocket::bind(&ipv4_addr).await?;
+                socket.set_broadcast(true)?;
+                println!("✅ Bound to IPv4 address: {}", ipv4_addr);
+                Ok(UDP { socket })
+            }
+        }
     }
     pub fn port(&self) -> u32 {
         self.socket.local_addr().unwrap().port() as u32
