@@ -11,7 +11,7 @@ async fn main() -> Result<(), Error> {
     for iter  in interfaces.iter() {
         println!("{:?}", iter);
     }
-    let ip_client = interfaces[0].ip().to_string();
+    let ip_client = interfaces[1].ip().to_string();
     let socket = UDP::new(8081,ip_client.as_str()).await?;
     let mut client = Client::new(username.clone(), Player::default(),String::new(), socket);
     let e = client.connect(username,ip_addr).await;

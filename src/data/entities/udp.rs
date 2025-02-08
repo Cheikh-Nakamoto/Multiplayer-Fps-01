@@ -1,7 +1,4 @@
-use std::{
-    io::{self, Error},
-    net::SocketAddr,
-};
+use std::io::{self, Error};
 use tokio::net::UdpSocket;
 pub struct UDP {
     pub socket: UdpSocket,
@@ -15,11 +12,8 @@ pub trait UDPMethod {
 
 impl UDP {
     pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
-        let ip_network: SocketAddr = format!("{}:{}", address, port)
-            .parse()
-            .map_err(|_| Error::new(std::io::ErrorKind::InvalidInput, "Adresse invalide"))?;
-        let socket = UdpSocket::bind(ip_network).await?;
-        //socket.set_broadcast(true)?; // Permettre la réception en broadcast
+        let socket = UdpSocket::bind(format!("{}:{}", address, port)).await?;
+        socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
     pub fn port(&self) -> u32 {
@@ -33,37 +27,30 @@ impl UDP {
 impl UDPMethod for UDP {
     async fn send(&self, message: String, addr: String) -> Result<usize, Error> {
         println!("Message envoyé : {} vers {}", message, addr);
-
-        // Nettoyer et formater l'adresse
-        let addr_with_port = if !addr.trim().contains(":") {
-            format!("{}:8080", addr.trim())
+        let addr_with_port = if !addr.contains(":") {
+            format!("{}:8080", addr.trim()) // Ajoute le port 8080 par défaut
         } else {
-            addr.trim().to_string()
+            addr.to_string()
         };
+        if addr_with_port.parse::<std::net::SocketAddr>().is_err() {
+            println!("❌ Erreur : Adresse invalide '{}'", addr_with_port);
+            return Err(Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Adresse invalide",
+            ));
+        }
 
-        // Parser l'adresse en SocketAddr
-        let socket_addr = match addr_with_port.parse::<std::net::SocketAddr>() {
-            Ok(addr) => addr,
+        match self
+            .socket
+            .send_to(message.as_bytes(), addr_with_port.clone())
+            .await
+        {
+            Ok(n) => println!(" message len: {}", n),
             Err(e) => {
-                eprintln!("❌ Erreur : Adresse invalide '{}' - {}", addr_with_port, e);
-                return Err(Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "Adresse invalide",
-                ));
-            }
-        };
-
-        // Envoyer le message
-        match self.socket.send_to(message.as_bytes(), &socket_addr).await {
-            Ok(n) => {
-                println!("✅ Message envoyé ({} bytes)", n);
-                Ok(n)
-            }
-            Err(e) => {
-                eprintln!("❌ Erreur d'envoi : {:?}", e);
-                Err(e)
+                println!("Error {:?} validity address {:?}", e, addr_with_port.parse::<std::net::SocketAddr>().is_err());
             }
         }
+        Ok(0)
     }
 
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error> {
