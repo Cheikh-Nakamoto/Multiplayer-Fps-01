@@ -67,6 +67,7 @@ impl ClientMethods for Client {
     }
 
     async fn connect(&mut self,username:String,ip_addr:String) -> Result<(String, String), Error> {
+        
         let mut identifient: HashMap<String, String> = HashMap::new();
         identifient.insert("username".to_string(), username.clone());
         let json_str = serde_json::to_string(&identifient).expect("Erreur de sérialisation");

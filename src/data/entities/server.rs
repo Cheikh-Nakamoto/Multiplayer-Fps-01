@@ -48,6 +48,7 @@ impl ServerMethod for Server {
         loop {
             match self.network.receive().await {
                 Ok((message, addr)) => {
+                    dbg!("Okk");
                     println!("message recus: {} sur l'address {}", message,addr);
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
