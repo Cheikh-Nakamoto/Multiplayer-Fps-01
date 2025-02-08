@@ -19,7 +19,7 @@ impl UDP {
             .parse()
             .map_err(|_| Error::new(std::io::ErrorKind::InvalidInput, "Adresse invalide"))?;
         let socket = UdpSocket::bind(ip_network).await?;
-        socket.set_broadcast(true)?; // Permettre la réception en broadcast
+        //socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
     pub fn port(&self) -> u32 {
