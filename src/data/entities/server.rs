@@ -53,7 +53,7 @@ impl ServerMethod for Server {
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
                             let mut msg : HashMap<String, String> = HashMap::new();
-                            msg.insert("status".to_string(), "200".to_string());
+                            msg.insert("status".to_string(), "succes".to_string());
                             let json_msg = serde_json::to_string(&msg).expect("Error");
                             if let Some(_) = information.get("username") {
                                self.network.send(json_msg, addr).await.expect("Error");

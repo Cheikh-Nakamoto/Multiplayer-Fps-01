@@ -34,6 +34,10 @@ impl UDPMethod for UDP {
             addr
         };
         println!("{}",addr_with_port);
+        if addr_with_port.parse::<std::net::SocketAddr>().is_err() {
+            eprintln!("❌ Erreur : Adresse invalide '{}'", addr_with_port);
+            return Err(Error::new(std::io::ErrorKind::InvalidInput, "Adresse invalide"));
+        }
         Ok(self.socket.send_to(message.as_bytes(), addr_with_port).await?)
     }
 
