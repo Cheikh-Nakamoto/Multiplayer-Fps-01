@@ -18,7 +18,7 @@ pub async fn run_server() -> Result<(), Error> {
         println!("{:?}", iter);
     }
     let ip_client = interfaces[1].ip().to_string();
-    let udp = UDP::new(8080, ip_client.as_str()).await?;
+    let udp = UDP::new(8080, ip_client.as_str()).await.unwrap();
     let server = Server::new(vec![], Game::new(), udp);
     server.run().await;
     Ok(())

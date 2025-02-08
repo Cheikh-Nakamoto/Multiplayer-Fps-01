@@ -1,5 +1,6 @@
 use std::{io::Error, net::UdpSocket};
-
+use serde::{Deserialize};
+use std::collections::HashMap;
 use super::{
     game::Game,
     player::Player,
@@ -46,8 +47,22 @@ impl ServerMethod for Server {
     async fn run(&self) {
         loop {
             match self.network.receive().await {
-                Ok((message,addr)) => {
+                Ok((message, addr)) => {
                     println!("message recus: {} sur l'address {}", message,addr);
+                    match serde_json::from_str::<HashMap<String, String>>(&message) {
+                        Ok(information) => {
+                            let mut msg : HashMap<String, String> = HashMap::new();
+                            msg.insert("status".to_string(), "200".to_string());
+                            let json_msg = serde_json::to_string(&msg).expect("Error");
+                            if let Some(_) = information.get("username") {
+                               self.network.send(json_msg, addr).await.expect("Error");
+                            }
+                        },
+                        Err(e) => {
+                            dbg!("Error", e);
+                        },
+                    }
+                    ;
                 }
                 Err(e) => {
                     println!("error{}",e);

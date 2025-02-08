@@ -7,7 +7,7 @@ edition = "2021"
 # Liste des binaires
 [[bin]]
 name = "client"  
-path = "src/system/client.rs"
+path = "src/system/systeme.rs"
 [[bin]]
 name = "main"
 path = "src/main.rs"

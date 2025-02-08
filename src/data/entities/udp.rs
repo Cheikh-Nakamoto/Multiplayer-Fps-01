@@ -1,19 +1,19 @@
+
 use std::io::{self, Error};
-use serde::{Deserialize, Serialize};
 use tokio::net::UdpSocket;
 pub struct UDP {
     pub socket: UdpSocket,
 }
 
 pub trait UDPMethod {
-    async fn send(&self, message: String, addr :String) -> Result<usize, Error>;
+    async fn send(&self, message: String, addr: String) -> Result<usize, Error> ;
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error>;
     async fn receive(&self) ->Result<(String, String), Error> ;
 }
 
 impl UDP {
     pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
-        let socket = UdpSocket::bind("0.0.0.0:8080").await?;
+        let socket = UdpSocket::bind(format!("{}:{}",address,port)).await?;
         socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
