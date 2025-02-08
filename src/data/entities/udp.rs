@@ -33,6 +33,7 @@ impl UDPMethod for UDP {
         } else {
             addr
         };
+        println!("{}",addr_with_port);
         Ok(self.socket.send_to(message.as_bytes(), addr_with_port).await?)
     }
 
