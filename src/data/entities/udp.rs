@@ -33,12 +33,13 @@ impl UDPMethod for UDP {
         } else {
             addr
         };
-        println!("{}",addr_with_port);
         if addr_with_port.parse::<std::net::SocketAddr>().is_err() {
             eprintln!("❌ Erreur : Adresse invalide '{}'", addr_with_port);
             return Err(Error::new(std::io::ErrorKind::InvalidInput, "Adresse invalide"));
         }
-        Ok(self.socket.send_to(message.as_bytes(), addr_with_port).await?)
+        let len = self.socket.send_to(message.as_bytes(), addr_with_port).await;
+        println!(" message len: {:?}", len);
+        Ok(0)
     }
 
 
@@ -56,9 +57,6 @@ impl UDPMethod for UDP {
                 message.extend_from_slice(&buf[..n]);
                 source = addr.ip().to_string();
             }
-            // Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-            //     continue;
-            // }
             e => return Err(Error::new(io::ErrorKind::BrokenPipe,e.1.ip().to_string())),
         }
         Ok((String::from_utf8_lossy(&message).to_string(),source))
