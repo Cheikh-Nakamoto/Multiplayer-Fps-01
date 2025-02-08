@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::io;
 use std::io::Error;
 
-
 pub struct Client {
     username: String,
     player: Player,
@@ -16,7 +15,11 @@ pub struct Client {
 pub trait ClientMethods {
     fn update(&mut self);
     fn collect() -> Result<(String, String), Error>;
-    async fn connect(&mut self,username:String,ip_addr:String) -> Result<(String, String), Error>;
+    async fn connect(
+        &mut self,
+        username: String,
+        ip_addr: String,
+    ) -> Result<(String, String), Error>;
 }
 
 impl Client {
@@ -66,19 +69,19 @@ impl ClientMethods for Client {
         Ok((username, ip_addr))
     }
 
-    async fn connect(&mut self,username:String,ip_addr:String) -> Result<(String, String), Error> {
-        
+    async fn connect(
+        &mut self,
+        username: String,
+        ip_addr: String,
+    ) -> Result<(String, String), Error> {
         let mut identifient: HashMap<String, String> = HashMap::new();
         identifient.insert("username".to_string(), username.clone());
         let json_str = serde_json::to_string(&identifient).expect("Erreur de sérialisation");
-        self.network
-            .send(json_str, ip_addr.clone())
-            .await
-            .expect("TODO: panic message");
+        self.network.send(json_str, ip_addr.clone()).await?;
         let (message, ip) = self.network.receive().await.unwrap_or_default();
         let parsed_json: Value = serde_json::from_str(&message).expect("Erreur de parsing JSON");
-        if let Some(req_status) =  parsed_json.get("status"){
-            if req_status =="succes" {
+        if let Some(req_status) = parsed_json.get("status") {
+            if req_status == "succes" {
                 println!("Succes connexion !")
             }
         }
