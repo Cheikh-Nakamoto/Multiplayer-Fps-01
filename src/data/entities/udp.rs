@@ -30,7 +30,7 @@ impl UDPMethod for UDP {
         let addr_with_port = if !addr.contains(":") {
             format!("{}:8080", addr.trim()) // Ajoute le port 8080 par défaut
         } else {
-            addr
+            addr.to_string()
         };
         if addr_with_port.parse::<std::net::SocketAddr>().is_err() {
             eprintln!("❌ Erreur : Adresse invalide '{}'", addr_with_port);
@@ -39,13 +39,16 @@ impl UDPMethod for UDP {
                 "Adresse invalide",
             ));
         }
+
         match self
             .socket
-            .send_to(message.as_bytes(), addr_with_port)
+            .send_to(message.as_bytes(), addr_with_port.clone())
             .await
         {
             Ok(n) => println!(" message len: {}", n),
-            Err(e) => println!("Error {:?}", e),
+            Err(e) => {
+                println!("Error {:?} validity address {:?}", e, addr_with_port.parse::<std::net::SocketAddr>().is_err());
+            }
         }
         Ok(0)
     }
