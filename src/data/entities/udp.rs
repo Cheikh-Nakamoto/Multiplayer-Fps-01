@@ -1,12 +1,12 @@
 use std::io::{self, Error};
+use serde::{Deserialize, Serialize};
 use tokio::net::UdpSocket;
-
 pub struct UDP {
-    socket: UdpSocket,
+    pub socket: UdpSocket,
 }
 
 pub trait UDPMethod {
-    async fn send(&self, message: String) -> Result<usize, Error>;
+    async fn send(&self, message: String, addr :String) -> Result<usize, Error>;
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error>;
     async fn receive(&self) ->Result<(String, String), Error> ;
 }
@@ -25,10 +25,11 @@ impl UDP {
 }
 
 impl UDPMethod for UDP {
-    async fn send(&self, message: String) -> Result<usize, Error> {
+    async fn send(&self, message: String, addr :String) -> Result<usize, Error> {
+        println!("message {} ip {}", message, addr);
         Ok(self
             .socket
-            .send_to(message.as_bytes(), self.address())
+            .send_to(message.as_bytes(), addr)
             .await?)
     }
 

@@ -1,5 +1,5 @@
 use crate::Vec3;
-
+#[derive(Default)]
 pub struct Player {
     position: Vec3,
     dimension: Vec3,

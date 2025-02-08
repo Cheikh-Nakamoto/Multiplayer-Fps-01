@@ -19,7 +19,8 @@ pub trait ServerMethod {
 }
 
 impl Server {
-    pub fn new(clients: Vec<Player>, game: Game, network: UDP) -> Server {
+    pub async fn new(clients: Vec<Player>, game: Game, network: UDP) -> Server {
+        // Joindre le groupe multicast
         Server {
             clients,
             game,
