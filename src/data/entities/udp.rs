@@ -1,4 +1,3 @@
-
 use std::io::{self, Error};
 use tokio::net::UdpSocket;
 pub struct UDP {
@@ -6,14 +5,14 @@ pub struct UDP {
 }
 
 pub trait UDPMethod {
-    async fn send(&self, message: String, addr: String) -> Result<usize, Error> ;
+    async fn send(&self, message: String, addr: String) -> Result<usize, Error>;
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error>;
-    async fn receive(&self) ->Result<(String, String), Error> ;
+    async fn receive(&self) -> Result<(String, String), Error>;
 }
 
 impl UDP {
     pub async fn new(port: u32, address: &str) -> Result<UDP, Error> {
-        let socket = UdpSocket::bind(format!("{}:{}",address,port)).await?;
+        let socket = UdpSocket::bind(format!("{}:{}", address, port)).await?;
         socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
@@ -35,13 +34,21 @@ impl UDPMethod for UDP {
         };
         if addr_with_port.parse::<std::net::SocketAddr>().is_err() {
             eprintln!("❌ Erreur : Adresse invalide '{}'", addr_with_port);
-            return Err(Error::new(std::io::ErrorKind::InvalidInput, "Adresse invalide"));
+            return Err(Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Adresse invalide",
+            ));
         }
-        let len = self.socket.send_to(message.as_bytes(), addr_with_port).await;
-        println!(" message len: {:?}", len);
+        match self
+            .socket
+            .send_to(message.as_bytes(), addr_with_port)
+            .await
+        {
+            Ok(n) => println!(" message len: {}", n),
+            Err(e) => println!("Error {:?}", e),
+        }
         Ok(0)
     }
-
 
     async fn connect_to_dest(&self, ip_addr: String) -> Result<(), Error> {
         Ok(self.socket.connect(ip_addr).await?)
@@ -57,8 +64,8 @@ impl UDPMethod for UDP {
                 message.extend_from_slice(&buf[..n]);
                 source = addr.ip().to_string();
             }
-            e => return Err(Error::new(io::ErrorKind::BrokenPipe,e.1.ip().to_string())),
+            e => return Err(Error::new(io::ErrorKind::BrokenPipe, e.1.ip().to_string())),
         }
-        Ok((String::from_utf8_lossy(&message).to_string(),source))
+        Ok((String::from_utf8_lossy(&message).to_string(), source))
     }
 }
