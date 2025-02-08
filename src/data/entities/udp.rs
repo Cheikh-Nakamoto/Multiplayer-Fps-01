@@ -29,11 +29,10 @@ impl UDPMethod for UDP {
     async fn send(&self, message: String, addr: String) -> Result<usize, Error> {
         println!("Message envoyé : {} vers {}", message, addr);
         let addr_with_port = if !addr.contains(":") {
-            format!("{}:8080", addr) // Ajoute le port 8080 par défaut
+            format!("{}:8080", addr.trim()) // Ajoute le port 8080 par défaut
         } else {
             addr
         };
-
         Ok(self.socket.send_to(message.as_bytes(), addr_with_port).await?)
     }
 
