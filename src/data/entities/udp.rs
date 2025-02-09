@@ -60,7 +60,7 @@ impl UDPMethod for UDP {
     async fn create_socket_sender(port:u32) -> Result<UDP,Error> {
         let interfaces = get_if_addrs().expect("Impossible de récupérer les interfaces réseau");
         let ip_client = interfaces[1].ip().to_string();
-        println!("IP client : {}:{}", ip_client,port);
+        // println!("IP client : {}:{}", ip_client,port);
         let udp = UDP::new(port, ip_client.as_str()).await?;
         Ok(udp)
     }

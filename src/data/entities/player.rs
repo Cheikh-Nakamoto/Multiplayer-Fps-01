@@ -1,5 +1,6 @@
-use crate::Vec3;
-#[derive(Default)]
+// use crate::Vec3;
+use bevy::prelude::*;
+#[derive(Default, Component)]
 pub struct Player {
     pub username: String,
     pub position: Vec3,
@@ -10,7 +11,8 @@ pub struct Player {
 // trait
 
 trait PlayerMethod {
-    fn move_to(&self, position: f32, direction: f32) -> (f32, f32);
+    // fn move_to(&self, position: f32, direction: f32) -> (f32, f32);
+    fn update_position(&mut self, position: Vec3);
 }
 
 impl Player {
@@ -40,7 +42,13 @@ impl Player {
     pub fn set_health(&mut self, health: u32) {
         self.health = health;
     }
-    pub fn move_to(&self, position: f32, direction: f32) -> (f32, f32) {
-        (position, direction)
+    // pub fn move_to(&self, position: f32, direction: f32) -> (f32, f32) {
+    //     (position, direction)
+    // }
+}
+
+impl PlayerMethod for Player {
+    fn update_position(&mut self, position: Vec3) {
+        self.position = position;
     }
 }

@@ -6,10 +6,11 @@ edition = "2021"
 
 # Liste des binaires
 [[bin]]
-name = "client"  
-path = "src/system/systeme.rs"
+name = "client"
+path = "src/bin/client.rs"
+
 [[bin]]
-name = "main"
+name = "server"
 path = "src/main.rs"
 
 [dependencies]
@@ -18,5 +19,6 @@ nalgebra = "0.33.2"
 tokio = {version = "1.43.0", features=["full"]}
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
+bevy = "0.12"
 
 

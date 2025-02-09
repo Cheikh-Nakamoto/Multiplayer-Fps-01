@@ -1,3 +1,5 @@
+use crate::data::enums::type_msg::TypeMessage;
+
 use super::{
     clients::Client,
     game::Game,
@@ -21,8 +23,9 @@ pub trait ServerMethod {
     fn manage_levels(&self);
     async fn run(server: &mut Server);
     async fn response(&self, data: HashMap<String, String>, ip_adrrs:String,status:&str) ;
+    fn treatment_message(&mut self, adrr_client: String, data: TypeMessage, information: HashMap<String, String>);
+   
 }
-
 impl Server {
     pub fn new(clients: Vec<String>, players: Vec<Player>, game: Game, network: UDP) -> Server {
         Server {
@@ -58,6 +61,15 @@ impl Server {
     pub fn game(&self) -> &Game {
         &self.game
     }
+
+    fn get_player_by_username(&self, username: &str) -> Option<&Player> {
+        for player in self.players.iter() {
+            if player.username == username {
+                return Some(player);
+            }
+        }
+        None
+    }
 }
 
 impl ServerMethod for Server {
@@ -86,7 +98,36 @@ impl ServerMethod for Server {
             .await
             .expect("Error");
     }
+
     fn manage_levels(&self) {}
+
+    fn treatment_message(&mut self, addr: String,message: TypeMessage, information: HashMap<String, String>) {
+        
+        match message {
+            TypeMessage::Connection => {
+                let username = information.get("username").unwrap().to_string();
+                match self.check_username(&information) {
+                    Ok(()) => {
+                        self.accept(username, addr.clone());
+                    }
+                    Err(_) => {
+                        dbg!("Error {}", username);
+                    }
+                }
+                
+            }
+            TypeMessage::Movement => {
+                println!("Movement");
+            }
+            TypeMessage::Disconnection => {
+                println!("Disconnect");
+            }
+            TypeMessage::Unknown => {
+                println!("Unknown");
+            }
+          
+        }
+    }
 
     async fn run(server: &mut Server) {
         loop {
@@ -98,16 +139,9 @@ impl ServerMethod for Server {
                     );
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
-                            let username = information.get("username").unwrap().to_string();
-                            match server.check_username(&information) {
-                                Ok(()) => {
-                                    server.accept(username, addr.clone());
-                                }
-                                Err(_) => {
-                                    println!("ceci est un update d'etat du Player {}", username);
-                                }
-                            }
-                            server.response(information,addr.clone(),"succes").await;
+                            let type_msg = TypeMessage::from(information.get("type").unwrap().as_str());
+                            server.treatment_message(addr.clone(),type_msg, information.clone());
+                            server.response(information, addr, "succes").await;
                         }
                         Err(e) => {
                             println!("Error : {}", e);

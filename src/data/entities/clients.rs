@@ -1,11 +1,13 @@
 use super::udp::UDPMethod;
 use super::{player::Player, udp::UDP};
+use bevy::prelude::*;
+use get_if_addrs::get_if_addrs;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::io;
 use std::io::Error;
-use get_if_addrs::get_if_addrs;
 
+#[derive(Resource)]
 pub struct Client {
     username: String,
     player: Player,
@@ -13,7 +15,7 @@ pub struct Client {
 }
 
 pub trait ClientMethods {
-    fn update(&mut self);
+    // fn update(&mut self);
     fn collect() -> Result<(String, String), Error>;
     async fn connect(
         &mut self,
@@ -46,9 +48,6 @@ impl Client {
 }
 
 impl ClientMethods for Client {
-    fn update(&mut self) {
-        self.player.move_to(1.0, 1.0);
-    }
     fn collect() -> Result<(String, String), Error> {
         let mut ip_addr = String::new();
         let mut username = String::new();
@@ -72,6 +71,7 @@ impl ClientMethods for Client {
     ) -> Result<(String, String), Error> {
         let socket = UDP::create_socket_sender(8081).await?;
         let mut identifient: HashMap<String, String> = HashMap::new();
+        identifient.insert("type".to_string(), "connection".to_string());
         identifient.insert("username".to_string(), username.clone());
         let json_str = serde_json::to_string(&identifient).expect("Erreur de sérialisation");
         socket.send(json_str, ip_addr.clone()).await?;

@@ -1,4 +1,5 @@
 pub mod data;
+pub mod system;
 
 use crate::data::entities::{
     game::Game,
@@ -6,9 +7,7 @@ use crate::data::entities::{
     udp::UDP,
 };
 use std::io::Error;
-use get_if_addrs::get_if_addrs;
 
-//pub use bevy::math::Vec3;
 pub mod nalgebra;
 pub use nalgebra::Vec3;
 use crate::data::entities::udp::UDPMethod;
