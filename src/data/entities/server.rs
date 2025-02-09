@@ -1,34 +1,59 @@
-use std::{io::Error, net::UdpSocket};
-use serde::{Deserialize};
-use std::collections::HashMap;
 use super::{
+    clients::Client,
     game::Game,
     player::Player,
     udp::{UDPMethod, UDP},
 };
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::{io::Error, net::UdpSocket};
+
 pub struct Server {
-    clients: Vec<Player>,
-    game: Game,
+    pub addr_clients: Vec<String>,
+    pub players: Vec<Player>,
+    pub game: Game,
     pub network: UDP,
 }
 
 pub trait ServerMethod {
-    fn accept(&self, stream: UdpSocket) -> Result<(), Error>;
-    fn broadcast(&self, message: String);
+    fn accept(&mut self, username: String, addr: String);
+    async fn broadcast(&self, data: HashMap<String, String>);
     fn manage_levels(&self);
-    async fn run(&self);
+    async fn run(server: &mut Server);
+    async fn response(&self, data: HashMap<String, String>, ip_adrrs:String,status:&str) ;
 }
 
 impl Server {
-    pub fn new(clients: Vec<Player>, game: Game, network: UDP) -> Server {
+    pub fn new(clients: Vec<String>, players: Vec<Player>, game: Game, network: UDP) -> Server {
         Server {
-            clients,
+            addr_clients: clients,
+            players,
             game,
             network,
         }
     }
-    pub fn clients(&self) -> &Vec<Player> {
-        &self.clients
+
+    pub fn check_username(&self, data: &HashMap<String, String>) -> Result<(), Error> {
+        println!("len players {}", self.players.len());
+        for player in self.players.iter() {
+           println!("Checking player {}", player.username);
+        }
+        if let Some(username) = data.get("username") {
+            for player in self.players.iter() {
+                if &player.username == username {
+                    return Err(Error::new(
+                        std::io::ErrorKind::AlreadyExists,
+                        "Nom d'utilisateur déjà utilisé",
+                    ));
+                }
+            }
+        } else {
+            return Err(Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                "Nom d'utilisateur déjà utilisé",
+            ));
+        }
+        Ok(())
     }
     pub fn game(&self) -> &Game {
         &self.game
@@ -36,37 +61,63 @@ impl Server {
 }
 
 impl ServerMethod for Server {
-    fn accept(&self, stream: UdpSocket) -> Result<(), Error> {
-        Ok(())
+    fn accept(&mut self, username: String, addr: String) {
+        let mut player = Player::default();
+        player.username = username.to_string();
+        self.addr_clients.push(addr.clone());
+        self.players.push(player);
+        println!("Nouveau client : {}", username);
     }
-    fn broadcast(&self, message: String) {
-        todo!()
+    async fn broadcast(&self, data: HashMap<String, String>) {
+        for addr in &self.addr_clients {
+            self.response(data.clone(), addr.clone(),"succes").await;
+        }
+    }
+
+    async fn response(&self, data: HashMap<String, String>, ip_adrrs:String,status:&str) {
+        let mut msg: HashMap<String, String> = data.iter()
+            .map(|(k, v)| (k.clone(), v.clone())) // Clone les clés et les valeurs
+            .collect();
+        msg.insert("status".to_string(), status.to_string());
+        let json_msg = serde_json::to_string(&msg).expect("Error");
+        self
+            .network
+            .send(json_msg, format!("{}:8081", ip_adrrs))
+            .await
+            .expect("Error");
     }
     fn manage_levels(&self) {}
 
-    async fn run(&self) {
+    async fn run(server: &mut Server) {
         loop {
-            match self.network.receive().await {
+            match server.network.receive().await {
                 Ok((message, addr)) => {
-                    dbg!("Okk");
-                    println!("message recus: {} sur l'address {}", message,addr);
+                    println!(
+                        "message decode : {:?}",
+                        serde_json::from_str::<HashMap<String, String>>(&message)
+                    );
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
-                            let mut msg : HashMap<String, String> = HashMap::new();
-                            msg.insert("status".to_string(), "succes".to_string());
-                            let json_msg = serde_json::to_string(&msg).expect("Error");
-                            if let Some(_) = information.get("username") {
-                               self.network.send(json_msg, addr).await.expect("Error");
+                            let username = information.get("username").unwrap().to_string();
+                            match server.check_username(&information) {
+                                Ok(()) => {
+                                    server.accept(username, addr.clone());
+                                }
+                                Err(_) => {
+                                    println!("ceci est un update d'etat du Player {}", username);
+                                }
                             }
-                        },
+                            server.response(information,addr.clone(),"succes").await;
+                        }
                         Err(e) => {
-                            dbg!("Error", e);
-                        },
+                            println!("Error : {}", e);
+                            server.response(HashMap::new(),addr.clone(),"failed").await;
+
+                        }
                     }
-                    ;
                 }
                 Err(e) => {
-                    println!("error{}",e);
+                    println!("error{}", e);
                 }
             }
         }

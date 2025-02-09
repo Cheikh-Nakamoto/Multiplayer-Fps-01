@@ -4,12 +4,12 @@ use serde_json::Value;
 use std::collections::HashMap;
 use std::io;
 use std::io::Error;
+use get_if_addrs::get_if_addrs;
 
 pub struct Client {
     username: String,
     player: Player,
     server: String,
-    pub network: UDP,
 }
 
 pub trait ClientMethods {
@@ -23,16 +23,12 @@ pub trait ClientMethods {
 }
 
 impl Client {
-    pub fn new(username: String, player: Player, server: String, network: UDP) -> Client {
+    pub fn new(username: String, player: Player, server: String) -> Client {
         Client {
             username,
             player,
             server,
-            network,
         }
-    }
-    pub fn ip_address(&self) -> String {
-        self.network.address()
     }
     pub fn username(&self) -> String {
         self.username.clone()
@@ -74,11 +70,12 @@ impl ClientMethods for Client {
         username: String,
         ip_addr: String,
     ) -> Result<(String, String), Error> {
+        let socket = UDP::create_socket_sender(8081).await?;
         let mut identifient: HashMap<String, String> = HashMap::new();
         identifient.insert("username".to_string(), username.clone());
         let json_str = serde_json::to_string(&identifient).expect("Erreur de sérialisation");
-        self.network.send(json_str, ip_addr.clone()).await?;
-        let (message, ip) = self.network.receive().await.unwrap_or_default();
+        socket.send(json_str, ip_addr.clone()).await?;
+        let (message, ip) = socket.receive().await.unwrap_or_default();
         let parsed_json: Value = serde_json::from_str(&message).expect("Erreur de parsing JSON");
         if let Some(req_status) = parsed_json.get("status") {
             if req_status == "succes" {

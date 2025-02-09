@@ -11,15 +11,11 @@ use get_if_addrs::get_if_addrs;
 //pub use bevy::math::Vec3;
 pub mod nalgebra;
 pub use nalgebra::Vec3;
+use crate::data::entities::udp::UDPMethod;
 
 pub async fn run_server() -> Result<(), Error> {
-    let interfaces = get_if_addrs().expect("Impossible de récupérer les interfaces réseau");
-    for iter  in interfaces.iter() {
-        println!("{:?}", iter);
-    }
-    let ip_client = interfaces[1].ip().to_string();
-    let udp = UDP::new(8080, ip_client.as_str()).await?;
-    let server = Server::new(vec![], Game::new(), udp);
-    server.run().await;
+    let socket = UDP::create_socket_sender(8080).await?;
+    let mut server = Server::new(vec![],vec![], Game::new(), socket);
+    Server::run(&mut server).await;
     Ok(())
 }

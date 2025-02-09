@@ -1,23 +1,25 @@
 use crate::Vec3;
 #[derive(Default)]
 pub struct Player {
-    position: Vec3,
-    dimension: Vec3,
-    health: u32
+    pub username: String,
+    pub position: Vec3,
+    pub dimension: Vec3,
+    pub health: u32,
 }
 
 // trait
 
 trait PlayerMethod {
-   fn move_to(&self, position: f32, direction: f32) -> (f32, f32);
+    fn move_to(&self, position: f32, direction: f32) -> (f32, f32);
 }
 
 impl Player {
     pub fn new(position: Vec3, dimension: Vec3, health: u32) -> Player {
         Player {
-            position ,
-            dimension ,
-            health 
+            username: "".to_string(),
+            position,
+            dimension,
+            health,
         }
     }
     pub fn position(&self) -> Vec3 {
