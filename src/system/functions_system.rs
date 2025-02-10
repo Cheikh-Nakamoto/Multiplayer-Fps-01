@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{pbr::{NotShadowCaster, NotShadowReceiver}, prelude::*};
 use std::collections::HashMap;
 use crate::data::entities::{
     player::Player,
@@ -9,23 +9,23 @@ use crate::data::entities::{
 
 pub fn move_client_system(
     mut query: Query<(&mut Transform, &Player)>,
-    keyboard: Res<Input<KeyCode>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
 ) {
     let velocity = 1.0;
 
     for (mut transform, _player) in query.iter_mut() {
         let mut position = Vec3::ZERO;
-        if keyboard.pressed(KeyCode::W) {
+        if keyboard.pressed(KeyCode::KeyW) {
             position.z -= velocity;
         }
-        if keyboard.pressed(KeyCode::S) {
+        if keyboard.pressed(KeyCode::KeyS) {
             position.z += velocity;
         }
-        if keyboard.pressed(KeyCode::A) {
+        if keyboard.pressed(KeyCode::KeyA) {
             position.x -= velocity;
         }
-        if keyboard.pressed(KeyCode::D) {
+        if keyboard.pressed(KeyCode::KeyD) {
             position.x += velocity;
         }
         
@@ -60,22 +60,3 @@ pub fn move_client_system(
 }
 
 
-pub fn setup_system(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-
-    // Joueur
-    commands.spawn((
-        PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
-            ..default()
-        },
-        Player::default(),
-    ));
-
-    println!("Setup system executed!"); // Debug print
-}

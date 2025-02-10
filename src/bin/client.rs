@@ -1,9 +1,12 @@
 use bevy::prelude::*;
+use multiplayer_fps::system::camera::CameraPlugins;
+use multiplayer_fps::system::map::WorldConigPlugin;
 use std::io::Error;
 use tokio::runtime::Runtime;
 use multiplayer_fps::data::entities::clients::{ Client, ClientMethods};
 use multiplayer_fps::data::entities::player::Player;
-use multiplayer_fps::system::functions_system::{move_client_system, setup_system};
+use multiplayer_fps::system::light::LigthPlugin;
+use multiplayer_fps::system::functions_system::move_client_system;
 
 // #[tokio::main]
 fn main() -> Result<(), Error> {
@@ -17,9 +20,12 @@ fn main() -> Result<(), Error> {
     })?;
 
     App::new()
-        .add_plugins(DefaultPlugins)
         .insert_resource(client)
-        .add_systems(Startup, setup_system)
+        .insert_resource(AmbientLight {
+            brightness: 100.0,
+            ..default()
+        })
+        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin))
         .add_systems(Update, move_client_system)
         .run();
 
