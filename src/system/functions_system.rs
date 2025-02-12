@@ -1,36 +1,37 @@
-use bevy::{pbr::{NotShadowCaster, NotShadowReceiver}, prelude::*};
-use std::collections::HashMap;
 use crate::data::entities::{
-    player::Player,
     clients::Client,
-    udp::{UDP, UDPMethod},
+    player::{self, Player},
+    udp::{UDPMethod, UDP},
 };
-
+use bevy::{
+    pbr::{NotShadowCaster, NotShadowReceiver},
+    prelude::*,
+    time,
+};
+use std::collections::HashMap;
 
 pub fn move_client_system(
     mut query: Query<(&mut Transform, &Player)>,
     keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
+    time: Res<Time>,
 ) {
     let velocity = 1.0;
 
-    for (mut transform, _player) in query.iter_mut() {
-        let mut position = Vec3::ZERO;
-        if keyboard.pressed(KeyCode::KeyW) {
-            position.z -= velocity;
+    for (mut transform, player) in query.iter_mut() {
+        let mut movement_factor = 0.0;
+
+        if keyboard.pressed(KeyCode::ArrowUp) {
+            movement_factor += 1.0;
         }
-        if keyboard.pressed(KeyCode::KeyS) {
-            position.z += velocity;
-        }
-        if keyboard.pressed(KeyCode::KeyA) {
-            position.x -= velocity;
-        }
-        if keyboard.pressed(KeyCode::KeyD) {
-            position.x += velocity;
-        }
-        
-        if position != Vec3::ZERO {
-            transform.translation += position;
+
+        let movement_direction = transform.rotation * Vec3::Z;
+        let movement_distance = movement_factor * player.movement_speed * time.delta_secs();
+        let translation_delta = movement_direction * movement_distance;
+
+        if translation_delta != Vec3::ZERO {
+            transform.translation.z -= translation_delta.z;
+            transform.translation.x -= translation_delta.x;
             let mut data = HashMap::new();
             data.insert("type".to_string(), "movement".to_string());
             data.insert("username".to_string(), client.username().clone());
@@ -58,5 +59,3 @@ pub fn move_client_system(
         }
     }
 }
-
-

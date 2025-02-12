@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use multiplayer_fps::system::camera::CameraPlugins;
+use multiplayer_fps::system::camera_controller::update_camera_controller;
 use multiplayer_fps::system::map::WorldConigPlugin;
 use std::io::Error;
 use tokio::runtime::Runtime;
@@ -26,7 +27,7 @@ fn main() -> Result<(), Error> {
             ..default()
         })
         .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin))
-        .add_systems(Update, move_client_system)
+        .add_systems(Update, (move_client_system,update_camera_controller))
         .run();
 
     Ok(())

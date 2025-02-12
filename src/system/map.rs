@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{pbr::NotShadowCaster, prelude::*};
 
 pub struct WorldConigPlugin;
 
@@ -19,13 +19,16 @@ pub fn World_config(
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(50., 50.))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
+        Transform::from_xyz(0.0, 0.0, 0.0),
     ));
 
     let wall_color = materials.add(Color::srgb(0.8, 0.7, 0.6));
 
+    // let origin = [25.0, 0.0, 25.0];
+
     let walls = [
-        (0.0, 2.5, -25.0, 50.0, 5.0, 0.25), // Mur Nord
-        (0.0, 2.5, 25.0, 50.0, 5.0, 0.25),  // Mur Sud
+        (0.0, 2.5, 25.0, 50.0, 5.0, 0.25),  // Mur Nord
+        (0.0, 2.5, -25.0, 50.0, 5.0, 0.25), // Mur Sud
         (25.0, 2.5, 0.0, 0.25, 5.0, 50.0),  // Mur Est
         (-25.0, 2.5, 0.0, 0.25, 5.0, 50.0), // Mur Ouest
     ];
@@ -67,4 +70,5 @@ pub fn World_config(
         MeshMaterial3d(wall_color.clone()),
         transform,
     ));
+
 }

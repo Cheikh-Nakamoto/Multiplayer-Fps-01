@@ -6,6 +6,8 @@ pub struct Player {
     pub position: Vec3,
     pub dimension: Vec3,
     pub health: u32,
+    pub movement_speed: f32,
+    pub rotation_speed: f32,
 }
 
 // trait
@@ -16,12 +18,14 @@ trait PlayerMethod {
 }
 
 impl Player {
-    pub fn new(position: Vec3, dimension: Vec3, health: u32) -> Player {
+    pub fn new() -> Player {
         Player {
             username: "".to_string(),
-            position,
-            dimension,
-            health,
+            position: Vec3::ZERO,
+            dimension: Vec3::ZERO,
+            health: 1000,
+            movement_speed: 10.0,
+            rotation_speed: f32::to_radians(360.0),
         }
     }
     pub fn position(&self) -> Vec3 {
