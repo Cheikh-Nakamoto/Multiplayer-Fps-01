@@ -41,7 +41,7 @@ fn spawn_camera_player(mut command: Commands) {
         //     ),
         // },
         Player::new(),
-        RigidBody::Fixed,
+        RigidBody::Dynamic,
         Collider::capsule(Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.5),
         GravityScale(0.0),
         
