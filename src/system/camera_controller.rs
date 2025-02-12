@@ -1,5 +1,6 @@
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
+use bevy::window::CursorGrabMode;
 
 #[derive(Component)]
 pub struct CameraController {
@@ -11,21 +12,26 @@ pub struct CameraController {
 pub fn update_camera_controller(
     mut mouse_motion: EventReader<MouseMotion>,
     mut camera_query: Query<(&mut CameraController, &mut Transform)>,
+    windows: Query<&Window>,
 ) {
-    if let Ok((mut camera_controller, mut transform)) = camera_query.get_single_mut() {
-        for ev in mouse_motion.read() {
-            camera_controller.rotation.y -= ev.delta.x * camera_controller.sensitivity;
-            camera_controller.rotation.x -= ev.delta.y * camera_controller.sensitivity;
-
-            camera_controller.rotation.x = f32::clamp(
-                camera_controller.rotation.x,
-                -camera_controller.rotation_lock,
-                camera_controller.rotation_lock,
-            );
+    let window = windows.single();
+    if window.cursor_options.grab_mode == CursorGrabMode::Locked {
+        if let Ok((mut camera_controller, mut transform)) = camera_query.get_single_mut() {
+            for ev in mouse_motion.read() {
+                camera_controller.rotation.y -= ev.delta.x * camera_controller.sensitivity;
+                camera_controller.rotation.x -= ev.delta.y * camera_controller.sensitivity;
+    
+                camera_controller.rotation.x = f32::clamp(
+                    camera_controller.rotation.x,
+                    -camera_controller.rotation_lock,
+                    camera_controller.rotation_lock,
+                );
+            }
+    
+            let y_quat = Quat::from_axis_angle(Vec3::Y, camera_controller.rotation.y.to_radians());
+            let x_quat = Quat::from_axis_angle(Vec3::X, camera_controller.rotation.x.to_radians());
+            transform.rotation = y_quat * x_quat;
         }
-
-        let y_quat = Quat::from_axis_angle(Vec3::Y, camera_controller.rotation.y.to_radians());
-        let x_quat = Quat::from_axis_angle(Vec3::X, camera_controller.rotation.x.to_radians());
-        transform.rotation = y_quat * x_quat;
     }
+   
 }

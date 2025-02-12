@@ -3,6 +3,8 @@ use crate::data::entities::{
     player::{self, Player},
     udp::{UDPMethod, UDP},
 };
+use bevy::window::CursorGrabMode;
+
 use bevy::{
     pbr::{NotShadowCaster, NotShadowReceiver},
     prelude::*,
@@ -22,7 +24,7 @@ pub fn move_client_system(
         let mut movement_factor = 0.0;
 
         if keyboard.pressed(KeyCode::ArrowUp) {
-            movement_factor += 1.0;
+            movement_factor += velocity;
         }
 
         let movement_direction = transform.rotation * Vec3::Z;
@@ -56,6 +58,25 @@ pub fn move_client_system(
                     }
                 });
             });
+        }
+    }
+}
+
+pub fn setup_mouse(mut windows: Query<&mut Window>) {
+    if let Ok(mut window) = windows.get_single_mut() {
+        window.cursor_options.grab_mode = CursorGrabMode::Locked;
+        window.cursor_options.visible = false;
+    }
+}
+
+pub fn control_cursor(mut windows: Query<&mut Window>, keyboard: Res<ButtonInput<KeyCode>>) {
+    if let Ok(mut window) = windows.get_single_mut() {
+        if keyboard.just_pressed(KeyCode::Escape) {
+            window.cursor_options.grab_mode = match window.cursor_options.grab_mode {
+                CursorGrabMode::None => CursorGrabMode::Locked,
+                CursorGrabMode::Locked | CursorGrabMode::Confined => CursorGrabMode::None,
+            };
+            window.cursor_options.visible = !window.cursor_options.visible;
         }
     }
 }

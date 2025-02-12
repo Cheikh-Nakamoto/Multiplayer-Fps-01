@@ -10,11 +10,11 @@ pub struct WorldConigPlugin;
 
 impl Plugin for WorldConigPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, World_config);
+        app.add_systems(Startup, world_config);
     }
 }
 
-pub fn World_config(
+pub fn world_config(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,

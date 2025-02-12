@@ -7,7 +7,7 @@ use tokio::runtime::Runtime;
 use multiplayer_fps::data::entities::clients::{ Client, ClientMethods};
 use multiplayer_fps::data::entities::player::Player;
 use multiplayer_fps::system::light::LigthPlugin;
-use multiplayer_fps::system::functions_system::move_client_system;
+use multiplayer_fps::system::functions_system::{move_client_system, setup_mouse, control_cursor};
 
 // #[tokio::main]
 fn main() -> Result<(), Error> {
@@ -26,8 +26,9 @@ fn main() -> Result<(), Error> {
             brightness: 100.0,
             ..default()
         })
+        .add_systems(Startup, setup_mouse)
         .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin))
-        .add_systems(Update, (move_client_system,update_camera_controller))
+        .add_systems(Update, (move_client_system,update_camera_controller, control_cursor))
         .run();
 
     Ok(())
