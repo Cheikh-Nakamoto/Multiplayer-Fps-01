@@ -27,7 +27,7 @@ fn spawn_camera_player(mut command: Commands) {
         camera_controller::CameraController {
             sensitivity: 0.1,
             rotation: Vec2::ZERO,
-            rotation_lock: 360.0,
+            rotation_lock: 45.0,
         },
         Transform::from_xyz(24.0, 2.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
         // DistanceFog {
