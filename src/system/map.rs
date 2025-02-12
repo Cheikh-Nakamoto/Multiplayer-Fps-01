@@ -1,6 +1,6 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, path::Path};
 
-use bevy::{pbr::NotShadowCaster, prelude::*};
+use bevy::{asset::{io::AssetSourceId, AssetPath}, math::Affine2, pbr::NotShadowCaster, prelude::*};
 
 pub struct WorldConigPlugin;
 
@@ -16,6 +16,11 @@ pub fn World_config(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+
+    let path = Path::new("assets/textures/space.jpg");
+    let source = AssetSourceId::from("wall");
+    let asset_path = AssetPath::from_path(path).with_source(source);
+    let wall_texture: Handle<Image> = asset_server.load(asset_path);
     commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(50., 50.))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
@@ -36,7 +41,11 @@ pub fn World_config(
     for &(x, y, z, w, h, d) in &walls {
         commands.spawn((
             Mesh3d(meshes.add(Cuboid::new(w, h, d))),
-            MeshMaterial3d(wall_color.clone()),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color_texture: Some(wall_texture.clone()),
+                uv_transform: Affine2::from_scale(Vec2::new(2., 3.)),
+                ..default()
+            })),
             Transform::from_xyz(x, y, z),
         ));
     }
