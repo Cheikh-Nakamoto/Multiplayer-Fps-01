@@ -18,22 +18,34 @@ pub fn move_client_system(
     client: Res<Client>,
     time: Res<Time>,
 ) {
-    let velocity = 1.0;
+    let step = 1.0;
 
     for (mut transform, player) in query.iter_mut() {
         let mut movement_factor = 0.0;
-
-        if keyboard.pressed(KeyCode::ArrowUp) {
-            movement_factor += velocity;
+        let mut left_right_factor = 0.0;
+        if keyboard.pressed(KeyCode::KeyW) {
+            movement_factor += step;
+        }
+        if keyboard.pressed(KeyCode::KeyS) {
+            movement_factor -= step;
         }
 
+        if keyboard.pressed(KeyCode::KeyA) {
+            left_right_factor += step;
+        }
+        if keyboard.pressed(KeyCode::KeyD) {
+            left_right_factor -= step;
+        }
         let movement_direction = transform.rotation * Vec3::Z;
         let movement_distance = movement_factor * player.movement_speed * time.delta_secs();
         let translation_delta = movement_direction * movement_distance;
-
-        if translation_delta != Vec3::ZERO {
-            transform.translation.z -= translation_delta.z;
-            transform.translation.x -= translation_delta.x;
+        let left_right_direction = transform.rotation * Vec3::X;
+        let left_right_distance = left_right_factor * player.movement_speed * time.delta_secs();
+        let left_right_delta = left_right_direction * left_right_distance;
+        
+        if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
+            transform.translation.x -= translation_delta.x + left_right_delta.x;
+            transform.translation.z -= translation_delta.z + left_right_delta.z;
             let mut data = HashMap::new();
             data.insert("type".to_string(), "movement".to_string());
             data.insert("username".to_string(), client.username().clone());

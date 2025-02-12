@@ -5,6 +5,7 @@ use bevy::{
     pbr::{CascadeShadowConfigBuilder, NotShadowCaster},
     prelude::*,
 };
+use bevy_rapier3d::prelude::{CoefficientCombineRule, Collider, Friction, Restitution, RigidBody};
 
 pub struct WorldConigPlugin;
 
@@ -24,6 +25,7 @@ pub fn world_config(
     let source = AssetSourceId::from("wall");
     let asset_path = AssetPath::from_path(path).with_source(source);
     commands.spawn((
+        
         Mesh3d(meshes.add(Plane3d::default().mesh().size(50., 50.))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
         Transform::from_xyz(0.0, 0.0, 0.0),
@@ -43,9 +45,19 @@ pub fn world_config(
 
     for &(x, y, z, w, h, d) in &walls {
         commands.spawn((
+            RigidBody::Fixed,
+            Collider::cuboid(w/2.0, h/2.0, d/2.0),
+            Friction {
+                coefficient: 0.7,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            Restitution {
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            Transform::from_xyz(x, y, z),
             Mesh3d(meshes.add(Cuboid::new(w, h, d))),
             MeshMaterial3d(wall_color1.clone()),
-            Transform::from_xyz(x, y, z),
         ));
     }
 
@@ -66,6 +78,8 @@ pub fn world_config(
 
     for &(x, y, z, w, h, d) in &maze_walls {
         commands.spawn((
+            RigidBody::Fixed,
+            Collider::cuboid(w/2.0, h/2.0, d/2.0),
             Mesh3d(meshes.add(Cuboid::new(w, h, d))),
             MeshMaterial3d(wall_color2.clone()),
             Transform::from_xyz(x, y, z),

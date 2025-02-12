@@ -3,11 +3,12 @@ use bevy::app::Plugin;
 use bevy::math::{Vec2, Vec3};
 // use bevy::pbr::{DistanceFog, FogFalloff};
 use bevy::prelude::{Camera3d, Commands, Startup, Transform};
+use bevy::render::primitives::Sphere;
+use bevy_rapier3d::prelude::{Collider, GravityScale, LockedAxes, RigidBody, Velocity};
 
 use crate::data::entities::player::Player;
 
 use super::camera_controller;
-
 
 //const CAMERA_INIT_POS: f64 = 80.0;
 
@@ -24,7 +25,7 @@ fn spawn_camera_player(mut command: Commands) {
     command.spawn((
         Camera3d::default(),
         camera_controller::CameraController {
-            sensitivity: 0.07,
+            sensitivity: 0.1,
             rotation: Vec2::ZERO,
             rotation_lock: 360.0,
         },
@@ -39,6 +40,10 @@ fn spawn_camera_player(mut command: Commands) {
         //         Color::srgb(0.8, 0.844, 1.0), // atmospheric inscattering color (light gained due to scattering from the sun)
         //     ),
         // },
-        Player::new()
+        Player::new(),
+        RigidBody::Fixed,
+        Collider::capsule(Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.5),
+        GravityScale(0.0),
+        
     ));
 }
