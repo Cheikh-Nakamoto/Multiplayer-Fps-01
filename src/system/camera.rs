@@ -3,8 +3,13 @@ use bevy::app::Plugin;
 use bevy::math::{Vec2, Vec3};
 // use bevy::pbr::{DistanceFog, FogFalloff};
 use bevy::prelude::{Camera3d, Commands, Startup, Transform};
-use bevy::render::primitives::Sphere;
-use bevy_rapier3d::prelude::{Collider, GravityScale, LockedAxes, RigidBody, Velocity};
+use bevy::utils::tracing::instrument::WithSubscriber;
+// use bevy::render::primitives::Sphere;
+use bevy_rapier3d::prelude::{
+    ActiveEvents, AdditionalMassProperties, Ccd, CoefficientCombineRule, Collider,
+    ColliderMassProperties, Damping, Friction, GravityScale, LockedAxes, Restitution, RigidBody,
+    Velocity,
+};
 
 use crate::data::entities::player::Player;
 
@@ -43,7 +48,23 @@ fn spawn_camera_player(mut command: Commands) {
         Player::new(),
         RigidBody::Dynamic,
         Collider::capsule(Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.5),
+        ColliderMassProperties::Mass(1.0),
         GravityScale(0.0),
-        
+        LockedAxes::ROTATION_LOCKED,
+        Friction {
+            coefficient: 2.0,
+            combine_rule: CoefficientCombineRule::Max,
+        },
+        Restitution {
+            coefficient: 0.0,
+            combine_rule: CoefficientCombineRule::Min,
+        },
+        Damping {
+            linear_damping: 5.0,
+            angular_damping: 1.0,
+        },
+        Velocity::zero(),
+        Ccd::enabled(),
+        ActiveEvents::COLLISION_EVENTS,
     ));
 }

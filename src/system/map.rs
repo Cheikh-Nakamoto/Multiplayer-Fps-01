@@ -48,8 +48,8 @@ pub fn world_config(
             RigidBody::Fixed,
             Collider::cuboid(w/2.0, h/2.0, d/2.0),
             Friction {
-                coefficient: 0.7,
-                combine_rule: CoefficientCombineRule::Min,
+                coefficient: 2.,
+                    combine_rule: CoefficientCombineRule::Max,
             },
             Restitution {
                 coefficient: 0.0,
@@ -80,6 +80,14 @@ pub fn world_config(
         commands.spawn((
             RigidBody::Fixed,
             Collider::cuboid(w/2.0, h/2.0, d/2.0),
+            Friction {
+                coefficient: 2.,
+                    combine_rule: CoefficientCombineRule::Max,
+            },
+            Restitution {
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min,
+            },
             Mesh3d(meshes.add(Cuboid::new(w, h, d))),
             MeshMaterial3d(wall_color2.clone()),
             Transform::from_xyz(x, y, z),
