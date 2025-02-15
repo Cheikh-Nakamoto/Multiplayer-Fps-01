@@ -47,10 +47,10 @@ impl Server {
         }
         if let Some(username) = data.get("username") {
             if self.get_player_by_username(username).is_some() || username == "" {
-                self.response(data, self.network.address(), "Nom d'utilisateur vide").await;
+                self.response(data, self.network.address(), "Nom d'utilisateur incorrect ou déjà utilisé").await;
                 return Err(Error::new(
-                    std::io::ErrorKind::AlreadyExists,
-                    "Nom d'utilisateur vide",
+                    std::io::ErrorKind::NotConnected,
+                    "Nom d'utilisateur incorrect ou déjà utilisé",
                 ));
             }
         } else {
@@ -118,8 +118,8 @@ impl ServerMethod for Server {
                     Ok(()) => {
                         self.accept(username, addr.clone());
                     }
-                    Err(_) => {
-                        dbg!("Error {}", username);
+                    Err(e) => {
+                        dbg!("Error {}", e);
                     }
                 }
             }
