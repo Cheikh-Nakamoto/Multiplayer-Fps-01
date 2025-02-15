@@ -45,6 +45,7 @@ fn spawn_camera_player(mut command: Commands) {
         //         Color::srgb(0.8, 0.844, 1.0), // atmospheric inscattering color (light gained due to scattering from the sun)
         //     ),
         // },
+        Ccd::enabled(),
         Player::new(),
         RigidBody::Dynamic,
         Collider::capsule(Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.5),
@@ -64,7 +65,8 @@ fn spawn_camera_player(mut command: Commands) {
             angular_damping: 1.0,
         },
         Velocity::zero(),
-        Ccd::enabled(),
+        
         ActiveEvents::COLLISION_EVENTS,
+        
     ));
 }

@@ -78,8 +78,11 @@ impl ClientMethods for Client {
         let (message, ip) = socket.receive().await.unwrap_or_default();
         let parsed_json: Value = serde_json::from_str(&message).expect("Erreur de parsing JSON");
         if let Some(req_status) = parsed_json.get("status") {
-            if req_status == "succes" {
-                println!("Succes connexion !")
+            if req_status != "succes" {
+                return Err(Error::new(
+                    std::io::ErrorKind::NotConnected,
+                    "Nom d'utilisateur vide",
+                ));
             }
         }
         println!("response source {} message {}", ip, message);

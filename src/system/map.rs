@@ -37,16 +37,16 @@ pub fn world_config(
     // let origin = [25.0, 0.0, 25.0];
 
     let walls = [
-        (0.0, 2.5, 25.0, 50.0, 5.0, 0.25),  // Mur Nord
-        (0.0, 2.5, -25.0, 50.0, 5.0, 0.25), // Mur Sud
-        (25.0, 2.5, 0.0, 0.25, 5.0, 50.0),  // Mur Est
-        (-25.0, 2.5, 0.0, 0.25, 5.0, 50.0), // Mur Ouest
+        (0.0, 2.5, 25.0, 50.0, 5.0, 0.5),  // Mur Nord
+        (0.0, 2.5, -25.0, 50.0, 5.0, 0.5), // Mur Sud
+        (25.0, 2.5, 0.0, 0.5, 5.0, 50.0),  // Mur Est
+        (-25.0, 2.5, 0.0, 0.5, 5.0, 50.0), // Mur Ouest
     ];
 
     for &(x, y, z, w, h, d) in &walls {
         commands.spawn((
             RigidBody::Fixed,
-            Collider::cuboid(w/2.0, h/2.0, d/2.0),
+            Collider::cuboid(w/2., h/2.0, d/2.),
             Friction {
                 coefficient: 2.,
                     combine_rule: CoefficientCombineRule::Max,
