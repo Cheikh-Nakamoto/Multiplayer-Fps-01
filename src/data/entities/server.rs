@@ -46,20 +46,12 @@ impl Server {
             println!("Checking player {}", player.username);
         }
         if let Some(username) = data.get("username") {
-            if username == "" {
-                self.response(data, self.network.address(), "error").await;
+            if self.get_player_by_username(username).is_some() || username == "" {
+                self.response(data, self.network.address(), "Nom d'utilisateur vide").await;
                 return Err(Error::new(
                     std::io::ErrorKind::AlreadyExists,
                     "Nom d'utilisateur vide",
                 ));
-            }
-            for player in self.players.iter() {
-                if &player.username == username {
-                    return Err(Error::new(
-                        std::io::ErrorKind::AlreadyExists,
-                        "Nom d'utilisateur déjà utilisé",
-                    ));
-                }
             }
         } else {
             return Err(Error::new(

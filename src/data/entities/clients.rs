@@ -81,7 +81,7 @@ impl ClientMethods for Client {
             if req_status != "succes" {
                 return Err(Error::new(
                     std::io::ErrorKind::NotConnected,
-                    "Nom d'utilisateur vide",
+                    format!("{}",req_status ),
                 ));
             }
         }
