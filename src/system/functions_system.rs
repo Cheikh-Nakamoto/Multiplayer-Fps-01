@@ -21,6 +21,9 @@ pub fn move_client_system(
     let step = 1.0;
 
     for (mut transform, player) in query.iter_mut() {
+        if player.username != client.username() {
+            continue
+        }
         let mut movement_factor = 0.0;
         let mut left_right_factor = 0.0;
         if keyboard.pressed(KeyCode::KeyW) {
