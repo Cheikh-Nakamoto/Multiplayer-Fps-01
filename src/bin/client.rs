@@ -5,6 +5,7 @@ use multiplayer_fps::data::entities::player::Player;
 use multiplayer_fps::data::entities::udp::{UDPMethod, UdpReceiver, UDP};
 use multiplayer_fps::system::camera::CameraPlugins;
 use multiplayer_fps::system::camera_controller::update_camera_controller;
+use multiplayer_fps::system::fps_tool::OverlayColorPlugin;
 use multiplayer_fps::system::functions_system::{control_cursor, move_client_system, setup_mouse};
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
@@ -72,7 +73,7 @@ fn main() -> Result<(), Error> {
             ..default()
         })
         .add_systems(Startup, setup_mouse)
-        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(), BevyDevToolsPlugin,ReceiverPlugin ,OverlayColorPlugin         
+        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(),ReceiverPlugin ,OverlayColorPlugin         
         ))
         .add_systems(
             Update,

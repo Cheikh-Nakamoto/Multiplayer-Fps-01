@@ -4,7 +4,7 @@ use bevy_dev_tools::{
     DevToolsPlugin,
 };
 
-struct OverlayColorPlugin;
+pub struct OverlayColorPlugin;
 
 impl OverlayColorPlugin {
     const RED: Color = Color::srgb(1.0, 0.0, 0.0);
