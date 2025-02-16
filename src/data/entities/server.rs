@@ -1,5 +1,4 @@
 use bevy::utils::HashMap;
-use serde_json::Value;
 
 use crate::{
     data::enums::type_msg::TypeMessage,
@@ -11,7 +10,7 @@ use crate::{
 
 use super::{
     game::Game,
-    player::{Player},
+    player::Player,
     udp::{UDPMethod, UDP},
 };
 use std::io::Error;
@@ -126,7 +125,7 @@ impl ServerMethod for Server {
         new_player_request.insert("username".to_string(), username.clone()); // Nom du joueur
         new_player_request.insert("addr".to_string(), addr.clone()); // Adresse du joueur
 
-        let type_msg = TypeMessage::from("join");
+        let _type_msg = TypeMessage::from("join");
         // self.response(participants, addr.clone(), "succes").await;
         // Diffuser les données à tous les clients
         self.broadcast(new_player_request, addr.clone())

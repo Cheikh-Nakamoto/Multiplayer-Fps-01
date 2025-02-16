@@ -1,6 +1,5 @@
 // use bevy::render::render_resource::Texture;
 use crate::Vec3;
-use std::{io::Error};
 
 pub struct Wall {
     position: Vec3,

@@ -1,7 +1,7 @@
 use bevy::app::Plugin;
 use bevy::color::Srgba;
 use bevy::pbr::CascadeShadowConfigBuilder;
-use bevy::prelude::{default, Bundle, Color, Commands, DirectionalLight, Startup, Transform, Vec3};
+use bevy::prelude::{default, Color, Commands, DirectionalLight, Startup, Transform, Vec3};
 #[derive(Default)]
 pub struct LigthPlugin ;
 

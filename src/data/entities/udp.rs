@@ -1,7 +1,6 @@
 use bevy::{ecs::system::Resource, utils::HashMap};
-use bevy_rapier3d::rapier::crossbeam::channel::Receiver;
 use get_if_addrs::get_if_addrs;
-use std::io::{self, Error};
+use std::io::Error;
 use tokio::{net::UdpSocket, sync::mpsc};
 pub struct UDP {
     pub socket: UdpSocket,
@@ -11,9 +10,9 @@ pub struct UdpReceiver {
     pub receiver: mpsc::Receiver<HashMap<String, String>>,
 }
 pub trait UDPMethod {
-    async fn send(&self, message: String, addr: String) -> Result<usize, Error>;
-    async fn receive(&self) -> Result<(String, String), Error>;
-    async fn create_socket_sender(port: u32) -> Result<UDP, Error>;
+    fn send(&self, message: String, addr: String) -> impl std::future::Future<Output = Result<usize, Error>> + Send;
+    fn receive(&self) -> impl std::future::Future<Output = Result<(String, String), Error>> + Send;
+    fn create_socket_sender(port: u32) -> impl std::future::Future<Output = Result<UDP, Error>> + Send;
 }
 
 impl UDP {
@@ -75,14 +74,14 @@ impl UDPMethod for UDP {
     async fn receive(&self) -> Result<(String, String), Error> {
         let mut message = Vec::new();
         let mut buf = [0; 8192];
-        let mut source = String::new();
+        let source ;
         println!("Received");
         match self.socket.recv_from(&mut buf).await? {
             (n, addr) => {
                 message.extend_from_slice(&buf[..n]);
                 source = addr.ip().to_string();
             }
-            e => return Err(Error::new(io::ErrorKind::BrokenPipe, e.1.ip().to_string())),
+            // e => return Err(Error::new(io::ErrorKind::BrokenPipe, e.1.ip().to_string())),
         }
         Ok((String::from_utf8_lossy(&message).to_string(), source))
     }

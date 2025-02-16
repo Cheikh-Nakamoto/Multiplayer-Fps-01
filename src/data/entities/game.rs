@@ -6,11 +6,11 @@ pub struct Game {
     level: u32,
 }
 
-trait GameMethod {
-    fn update(&self);
-    fn check_collision(&self);
-    fn spawn_player(&self);
-}
+// trait GameMethod {
+//     fn update(&self);
+//     fn check_collision(&self);
+//     fn spawn_player(&self);
+// }
 
 impl Game {
     pub fn new() -> Game {

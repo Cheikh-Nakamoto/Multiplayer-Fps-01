@@ -7,10 +7,10 @@ pub struct Maze {
     spawn_points: Vec3,
 }
 
-trait MazeMethod {
-    fn generate(&self);
-    fn is_wall(&self) -> bool;
-}
+// trait MazeMethod {
+//     fn generate(&self);
+//     fn is_wall(&self) -> bool;
+// }
 
 impl Maze {
     pub fn new() -> Maze {

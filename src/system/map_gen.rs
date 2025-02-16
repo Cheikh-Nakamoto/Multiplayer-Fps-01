@@ -19,7 +19,7 @@ impl MapBlock {
     }
 }
 
-pub fn gen_map(cell_width: f32) -> Vec<Vec<MapBlock>> {
+pub fn gen_map(cell_width: f32, block_height: f32) -> Vec<Vec<MapBlock>> {
     // Lecture du fichier de map
     let content = fs::read_to_string("map.txt").expect("File not found");
     // Définir la taille d'une cellule
@@ -52,11 +52,11 @@ pub fn gen_map(cell_width: f32) -> Vec<Vec<MapBlock>> {
             let x = col_index as f32 * cell_width + (cell_width) / 2.0 - offset_x;
             let z = row_index as f32 * cell_width + (cell_width) / 2.0 - offset_z;
             // Pour cet exemple, on fixe y à 2.5 (comme dans vos tuples)
-            let y = 2.5;
+            let y = 2.2;
             // Pour un mur, on attribue la taille complète de la cellule,
             // sinon on laisse toutes les dimensions à 0.
             let (w, h, d) = if is_wall {
-                (cell_width, 5.0, cell_width)
+                (cell_width, block_height, cell_width)
             } else {
                 (0.0, 0.0, 0.0)
             };

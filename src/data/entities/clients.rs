@@ -1,7 +1,6 @@
 use super::udp::UDPMethod;
 use super::{player::Player, udp::UDP};
 use bevy::prelude::*;
-use get_if_addrs::get_if_addrs;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::io;
@@ -17,11 +16,11 @@ pub struct Client {
 pub trait ClientMethods {
     // fn update(&mut self);
     fn collect() -> Result<(String, String), Error>;
-    async fn connect(
+    fn connect(
         &mut self,
         username: String,
         ip_addr: String,
-    ) -> Result<(String, String), Error>;
+    ) -> impl std::future::Future<Output = Result<(String, String), Error>> + Send;
 }
 
 impl Client {

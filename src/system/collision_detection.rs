@@ -1,7 +1,6 @@
 use bevy::{ prelude::*, utils::HashMap };
-use bevy_rapier3d::prelude::Velocity;
+use bevy_rapier3d::prelude::*;
 
-use super::map_gen::MapBlock;
 
 #[derive(Component, Debug)]
 pub struct CustomCollider {
@@ -22,7 +21,7 @@ pub struct CollisionDetectionPlugin;
 
 impl Plugin for CollisionDetectionPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, collision_detection);
+        app.add_systems(Update, (collisions_detection, handle_collisions));
     }
 }
 
@@ -50,10 +49,10 @@ impl Plugin for CollisionDetectionPlugin {
 ///     query.push((entity_2, transform_2, collider_2));
 ///
 ///     // Perform collision detection
-///     collision_detection(query);
+///     collisions_detection(query);
 /// }
 /// ```
-fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomCollider)>) {
+fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomCollider)>) {
     let mut colliding_entities: HashMap<Entity, Vec<Entity>> = HashMap::new();
 
     // Detect collisions
@@ -61,7 +60,7 @@ fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomCo
         for (entity_b, transform_b, collider_b) in query.iter() {
             if entity_a != entity_b {
                 let distance = transform_a.translation().distance(transform_b.translation());
-                if distance < collider_a.radius + collider_b.radius {
+                if distance + 2.0 < collider_a.radius + collider_b.radius {
                     colliding_entities.entry(entity_a).or_insert_with(Vec::new).push(entity_b);
                 }
             }
@@ -77,10 +76,13 @@ fn collision_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomCo
     }
 }
 
-pub fn handle_collisions(mut _commands: Commands, mut query: Query<(Entity, &CustomCollider, &mut Velocity), With<MapBlock>>) {
-    for (_, collider, mut velocity) in query.iter_mut() {
+pub fn handle_collisions(
+    mut query: Query<(&CustomCollider, &mut Velocity)> // Retirer With<MapBlock>
+) {
+    for (collider, mut velocity) in query.iter_mut() {
         if !collider.colliding_entities.is_empty() {
             velocity.linvel = Vec3::ZERO;
+            // velocity.angvel = Vec3::ZERO;
         }
     }
 }

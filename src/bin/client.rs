@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use multiplayer_fps::data::entities::clients::{ Client, ClientMethods };
+use multiplayer_fps::data::entities::clients::*;
 use multiplayer_fps::data::entities::player::Player;
-use multiplayer_fps::data::entities::udp::{ UDPMethod, UdpReceiver, UDP };
+use multiplayer_fps::data::entities::udp::*;
 use multiplayer_fps::system::camera::CameraPlugins;
-use multiplayer_fps::system::camera_controller::update_camera_controller;
-use multiplayer_fps::system::collision_detection::CollisionDetectionPlugin;
-use multiplayer_fps::system::functions_system::{ control_cursor, move_client_system, setup_mouse };
+use multiplayer_fps::system::camera_controller::*;
+use multiplayer_fps::system::collision_detection::*;
+use multiplayer_fps::system::functions_system::*;
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
 use multiplayer_fps::system::receiver_server::ReceiverPlugin;
@@ -39,7 +39,7 @@ fn main() -> Result<(), Error> {
         let mut hash = HashMap::new();
         hash.insert("type", "participants");
         let hash_to_str = serde_json::to_string(&hash).unwrap_or_default();
-        udp.send(hash_to_str, client.server()).await;
+        let _ = udp.send(hash_to_str, client.server()).await;
         loop {
             match udp.receive().await {
                 Ok((message, _)) => {
@@ -81,9 +81,14 @@ fn main() -> Result<(), Error> {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             ReceiverPlugin,
-            CollisionDetectionPlugin
+            CollisionDetectionPlugin,
         ))
-        .add_systems(Update, (move_client_system, update_camera_controller, control_cursor))
+        .add_systems(Update, (
+            move_client_system,
+            update_camera_controller,
+            control_cursor,
+            handle_collisions,
+        ))
         .run();
 
     Ok(())

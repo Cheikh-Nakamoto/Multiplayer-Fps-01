@@ -1,28 +1,22 @@
-use crate::{data::entities::{
-    clients::Client,
-    player::{self, Player},
-    udp::{UDPMethod, UDP},
-}, utils::create_move_resp::create_move_resp};
+use crate::{
+    data::entities::{ clients::Client, player::Player, udp::{ UDPMethod, UDP } },
+    utils::create_move_resp::create_move_resp,
+};
 use bevy::window::CursorGrabMode;
 
-use bevy::{
-    pbr::{NotShadowCaster, NotShadowReceiver},
-    prelude::*,
-    time,
-};
-use std::collections::HashMap;
+use bevy::prelude::*;
 
 pub fn move_client_system(
     mut query: Query<(&mut Transform, &mut Player)>,
     keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
-    time: Res<Time>,
+    time: Res<Time>
 ) {
     let step = 1.0;
 
-    for (mut transform,mut player) in query.iter_mut() {
+    for (mut transform, mut player) in query.iter_mut() {
         if player.username != client.username() {
-            continue
+            continue;
         }
         let mut movement_factor = 0.0;
         let mut left_right_factor = 0.0;
@@ -45,12 +39,17 @@ pub fn move_client_system(
         let left_right_direction = transform.rotation * Vec3::X;
         let left_right_distance = left_right_factor * player.movement_speed * time.delta_secs();
         let left_right_delta = left_right_direction * left_right_distance;
-        
+
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
             transform.translation.x -= translation_delta.x + left_right_delta.x;
             transform.translation.z -= translation_delta.z + left_right_delta.z;
-            
-            let  data = create_move_resp(client.username().clone(),transform.translation.x,transform.translation.y,transform.translation.z);
+
+            let data = create_move_resp(
+                client.username().clone(),
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z
+            );
             let server_addr = client.server().clone();
             println!("Trying to send to server: {}", server_addr);
             std::thread::spawn(move || {

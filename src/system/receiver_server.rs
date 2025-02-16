@@ -4,12 +4,11 @@ use bevy::{
     color::Color,
     ecs::{
         entity::Entity,
-        system::{Commands, Query, Res, ResMut},
+        system::{Commands, Query, ResMut},
     },
-    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3},
+    math::{primitives::Cuboid, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
-    time::Time,
     transform::components::Transform,
     utils::{default, HashMap},
 };
@@ -69,10 +68,10 @@ fn receiver_data(
                     // Convertir la position en Vec3
                     let new_position = get_pos_player(information.clone());
                     // Mettre à jour la position du joueur
-                    for (_, mut transform, mut player) in player_query.iter_mut() {
+                    for (_, transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-                            transform.translation = new_position;
-                            player.position = transform.translation;
+
+                         let _ = transform.translation.lerp(new_position,0.05);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
