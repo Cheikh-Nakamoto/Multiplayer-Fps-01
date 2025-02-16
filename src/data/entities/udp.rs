@@ -1,15 +1,19 @@
-use std::io::{self, Error};
+use bevy::{ecs::system::Resource, utils::HashMap};
+use bevy_rapier3d::rapier::crossbeam::channel::Receiver;
 use get_if_addrs::get_if_addrs;
-use tokio::net::UdpSocket;
+use std::io::{self, Error};
+use tokio::{net::UdpSocket, sync::mpsc};
 pub struct UDP {
     pub socket: UdpSocket,
 }
-
-
+#[derive(Resource)]
+pub struct UdpReceiver {
+    pub receiver: mpsc::Receiver<HashMap<String, String>>,
+}
 pub trait UDPMethod {
     async fn send(&self, message: String, addr: String) -> Result<usize, Error>;
     async fn receive(&self) -> Result<(String, String), Error>;
-    async fn create_socket_sender(port:u32) -> Result<UDP,Error>;
+    async fn create_socket_sender(port: u32) -> Result<UDP, Error>;
 }
 
 impl UDP {
@@ -18,7 +22,6 @@ impl UDP {
         socket.set_broadcast(true)?; // Permettre la réception en broadcast
         Ok(UDP { socket })
     }
-
 
     pub fn port(&self) -> u32 {
         self.socket.local_addr().unwrap().port() as u32
@@ -51,26 +54,29 @@ impl UDPMethod for UDP {
         {
             Ok(n) => println!(" message len: {}", n),
             Err(e) => {
-                println!("Error {:?} validity address {:?}", e, addr_with_port.parse::<std::net::SocketAddr>().is_err());
+                println!(
+                    "Error {:?} validity address {:?}",
+                    e,
+                    addr_with_port.parse::<std::net::SocketAddr>().is_err()
+                );
             }
         }
         Ok(0)
     }
 
-    async fn create_socket_sender(port:u32) -> Result<UDP,Error> {
+    async fn create_socket_sender(port: u32) -> Result<UDP, Error> {
         let interfaces = get_if_addrs().expect("Impossible de récupérer les interfaces réseau");
         let ip_client = interfaces[1].ip().to_string();
-        println!("IP client : {}:{}", ip_client,port);
+        println!("IP client : {}:{}", ip_client, port);
         let udp = UDP::new(port, ip_client.as_str()).await?;
         Ok(udp)
     }
-
 
     async fn receive(&self) -> Result<(String, String), Error> {
         let mut message = Vec::new();
         let mut buf = [0; 8192];
         let mut source = String::new();
-    println!("Received");
+        println!("Received");
         match self.socket.recv_from(&mut buf).await? {
             (n, addr) => {
                 message.extend_from_slice(&buf[..n]);
@@ -78,7 +84,10 @@ impl UDPMethod for UDP {
             }
             e => return Err(Error::new(io::ErrorKind::BrokenPipe, e.1.ip().to_string())),
         }
-        println!("received message: {}", String::from_utf8_lossy(&message).to_string());
+        println!(
+            "received message: {}",
+            String::from_utf8_lossy(&message).to_string()
+        );
         Ok((String::from_utf8_lossy(&message).to_string(), source))
     }
 }

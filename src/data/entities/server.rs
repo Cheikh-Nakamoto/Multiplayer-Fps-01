@@ -77,13 +77,23 @@ impl Server {
 }
 
 impl ServerMethod for Server {
-    fn accept(&mut self, username: String, addr: String) {
-        let mut player = Player::default();
-        player.username = username.to_string();
-        self.addr_clients.push(addr.clone());
-        self.players.push(player);
-        println!("Nouveau client : {}", username);
-    }
+   fn accept(&mut self, username: String, addr: String) {
+    let mut player = Player::default();
+    player.username = username.clone();
+    self.addr_clients.push(addr.clone());
+    self.players.push(player);
+
+    println!("Nouveau client : {}", username);
+
+    // Créer les données à diffuser
+    let mut data = HashMap::new();
+    data.insert("type".to_string(), "join".to_string()); // Type de message
+    data.insert("username".to_string(), username);       // Nom du joueur
+    data.insert("addr".to_string(), addr);               // Adresse du joueur
+
+    // Diffuser les données à tous les clients
+    self.broadcast(data);
+}
     async fn broadcast(&self, data: HashMap<String, String>) {
         for addr in &self.addr_clients {
             self.response(data.clone(), addr.clone(), "succes").await;
@@ -132,6 +142,7 @@ impl ServerMethod for Server {
             TypeMessage::Unknown => {
                 println!("Unknown");
             }
+            TypeMessage::Join => todo!(),
         }
     }
 
