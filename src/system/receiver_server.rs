@@ -6,18 +6,16 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, ResMut},
     },
-    math::{primitives::Cuboid, Vec3},
-    pbr::{MaterialMeshBundle, MeshMaterial3d, StandardMaterial},
-    render::{mesh::{Mesh, Mesh3d}, view::visibility},
-    transform::components::{GlobalTransform, Transform}, utils::default,
+    math::primitives::Cuboid,
+    pbr::{MeshMaterial3d, StandardMaterial},
+    render::mesh::{Mesh, Mesh3d},
+    transform::components::Transform,
+    utils::default,
 };
 
 use crate::{
-    data::entities::{
-        player::{self, Player},
-        udp::UdpReceiver,
-    },
-    utils::get_field::get_pos_player,
+    data::entities::{player::Player, udp::UdpReceiver},
+    utils::get_field::{get_field, get_pos_player},
 };
 
 pub struct ReceiverPlugin;
@@ -38,65 +36,60 @@ fn receiver_data(
     // Lire les données du canal
     while let Ok(information) = udp_receiver.receiver.try_recv() {
         println!("Received data: {:?}", information);
-
         // Extraire le type de message
-        if let Some(type_msg) = information.get("type") {
-            match type_msg.as_str() {
-                "join" => {
-                    println!("<====================================================>\n\n");
-                    println!("Player joined: {:?}\n", information);
-                    println!("<====================================================>\n\n");
+        let type_msg = get_field(information.clone(),"type"); 
+        match type_msg.as_str() {
+            "join" => {
+                dbg!("<====================================================>\n\n");
+                dbg!("Player joined: {:?}\n", &information);
+                dbg!("<====================================================>\n\n");
 
-                    // Traiter l'événement "join"
-                    // Extraire le nom du joueur et sa position
-                    let username = information
-                        .get("username")
-                        .unwrap_or(&"Unknown".to_string())
-                        .clone();
+                // Traiter l'événement "join"
+                // Extraire le nom du joueur et sa position
+                let username = get_field(information, "username");
 
-                    // Créer l'entité du joueur
-                    spawn_other_player(&mut commands, &mut meshes, &mut materials, username);
-                }
-                "movement" => {
-                    // Traiter l'événement "move"
-                    if let Some(username) = information.get("username") {
-                        println!("<======================================>");
-                        println!("<===========Move player update: {}============>", username);
-                        // Convertir la position en Vec3
-                        let new_position = get_pos_player(information.clone());
-                        // Mettre à jour la position du joueur
-                        for (_, mut transform, player) in player_query.iter_mut() {
-                            if player.username == username.trim() {
-                                transform.translation = new_position;
-                                println!(
-                                    "<===========Movement update successfully: {:?}============>",
-                                    new_position
-                                );
+                // Créer l'entité du joueur
+                dbg!("===============================preparing add other player======================================================================");
 
-                                break;
-                            }
-                        }
-                        println!("<===============finish================>");
-                    }
-                }
-                "disconnection" => {
-                    println!("Player left: {:?}", information);
-                    // Traiter l'événement "leave"
-                    if let Some(username) = information.get("username") {
-                        // Supprimer l'entité du joueur
-                        for (entity, _, player) in player_query.iter() {
-                            if player.username == *username {
-                                commands.entity(entity).despawn();
-                            }
+                spawn_other_player(&mut commands, &mut meshes, &mut materials, username);
+            }
+            "movement" => {
+                // Traiter l'événement "move"
+                if let Some(username) = information.get("username") {
+                    println!("<======================================>");
+                    println!("<===========Move player update: {}============>", username);
+                    // Convertir la position en Vec3
+                    let new_position = get_pos_player(information.clone());
+                    // Mettre à jour la position du joueur
+                    for (_, mut transform, player) in player_query.iter_mut() {
+                        if player.username == username.trim() {
+                            transform.translation = new_position;
+                            println!(
+                                "<===========Movement update successfully: {:?}============>",
+                                new_position
+                            );
+
+                            break;
                         }
                     }
-                }
-                _ => {
-                    println!("Unknown message type: {}", type_msg);
+                    println!("<===============finish================>");
                 }
             }
-        } else {
-            println!("Received message without 'type' field: {:?}", information);
+            "disconnection" => {
+                println!("Player left: {:?}", information);
+                // Traiter l'événement "leave"
+                if let Some(username) = information.get("username") {
+                    // Supprimer l'entité du joueur
+                    for (entity, _, player) in player_query.iter() {
+                        if player.username == *username {
+                            commands.entity(entity).despawn();
+                        }
+                    }
+                }
+            }
+            _ => {
+                println!("Unknown message type: {}", type_msg);
+            }
         }
     }
 }
@@ -107,7 +100,7 @@ fn spawn_other_player(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     username: String,
 ) {
-    dbg!("=====================================================================================================");
+    dbg!("===============================add other player======================================================================");
     let mut player = Player::new();
     player.username = username;
     // Création du cube pour représenter le joueur
@@ -117,10 +110,5 @@ fn spawn_other_player(
         ..default()
     });
     // Créer l'entité du joueur
-    commands.spawn((
-        Mesh3d(player_mesh),
-        MeshMaterial3d(player_material),
-        player
-    ));
+    commands.spawn((Mesh3d(player_mesh), MeshMaterial3d(player_material), player));
 }
-

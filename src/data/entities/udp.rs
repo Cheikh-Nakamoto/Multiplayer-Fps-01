@@ -84,10 +84,6 @@ impl UDPMethod for UDP {
             }
             e => return Err(Error::new(io::ErrorKind::BrokenPipe, e.1.ip().to_string())),
         }
-        println!(
-            "received message: {}",
-            String::from_utf8_lossy(&message).to_string()
-        );
         Ok((String::from_utf8_lossy(&message).to_string(), source))
     }
 }

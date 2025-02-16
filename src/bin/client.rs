@@ -8,6 +8,7 @@ use multiplayer_fps::system::camera_controller::update_camera_controller;
 use multiplayer_fps::system::functions_system::{control_cursor, move_client_system, setup_mouse};
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
+use multiplayer_fps::system::receiver_server::ReceiverPlugin;
 use tokio::sync::mpsc;
 use std::io::Error;
 use tokio::runtime::Runtime;
@@ -41,10 +42,8 @@ fn main() -> Result<(), Error> {
                     // Désérialiser le message en HashMap<String, String>
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
+                           
                             // Envoyer le HashMap via le canal
-                            println!("<====================================================>\n\n");
-                            println!("receiver data incoming: {:?}\n", information);
-                            println!("<====================================================>\n\n");
                             if sender.send(information).await.is_err() {
                                 eprintln!("Failed to send data to Bevy");
                                 break;
@@ -70,21 +69,13 @@ fn main() -> Result<(), Error> {
             ..default()
         })
         .add_systems(Startup, setup_mouse)
-        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(),           
+        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(), ReceiverPlugin          
         ))
         .add_systems(
             Update,
-            (move_client_system, update_camera_controller, control_cursor,debug_players),
+            (move_client_system, update_camera_controller, control_cursor),
         )
         .run();
 
     Ok(())
-}
-
-
-
-fn debug_players(query: Query<&Player>) {
-    for player in query.iter() {
-        println!("Player in scene: {:?}", player);
-    }
 }
