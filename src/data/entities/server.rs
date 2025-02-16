@@ -1,3 +1,5 @@
+use bevy::utils::HashMap;
+
 use crate::{
     data::enums::type_msg::TypeMessage,
     utils::{
@@ -11,7 +13,6 @@ use super::{
     player::Player,
     udp::{UDPMethod, UDP},
 };
-use std::collections::HashMap;
 use std::io::Error;
 
 pub struct Server {

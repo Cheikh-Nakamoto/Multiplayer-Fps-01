@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 
-use bevy::{math::Vec3};
+
+use bevy::{math::Vec3, utils::HashMap};
 
 pub fn get_pos_player(data: HashMap<String, String>) -> Vec3 {
     let x = data

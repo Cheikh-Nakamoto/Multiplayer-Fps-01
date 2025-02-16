@@ -10,13 +10,6 @@ pub struct Player {
     pub rotation_speed: f32,
 }
 
-// trait
-
-trait PlayerMethod {
-    // fn move_to(&self, position: f32, direction: f32) -> (f32, f32);
-    fn update_position(&mut self, position: Vec3);
-}
-
 impl Player {
     pub fn new() -> Player {
         Player {
@@ -51,8 +44,3 @@ impl Player {
     // }
 }
 
-impl PlayerMethod for Player {
-    fn update_position(&mut self, position: Vec3) {
-        self.position = position;
-    }
-}
