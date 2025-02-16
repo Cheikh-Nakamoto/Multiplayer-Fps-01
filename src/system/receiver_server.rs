@@ -4,11 +4,12 @@ use bevy::{
     color::Color,
     ecs::{
         entity::Entity,
-        system::{Commands, Query, ResMut},
+        system::{Commands, Query, Res, ResMut},
     },
-    math::{primitives::Cuboid, Vec3},
+    math::{primitives::Cuboid, StableInterpolate, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
+    time::Time,
     transform::components::Transform,
     utils::{default, HashMap},
 };
@@ -32,9 +33,10 @@ fn receiver_data(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut udp_receiver: ResMut<UdpReceiver>,
     mut player_query: Query<(Entity, &mut Transform, &Player)>, // Ajout de la requête ici
+    time: Res<Time>,
 ) {
     // Lire les
-   
+
     while let Ok(information) = udp_receiver.receiver.try_recv() {
         // Extraire le type de message
         let type_msg = get_field(information.clone(), "type");
@@ -68,14 +70,18 @@ fn receiver_data(
                     // Convertir la position en Vec3
                     let new_position = get_pos_player(information.clone());
                     // Mettre à jour la position du joueur
+                    let decay_rate = f32::ln(10.0);
+                    let delta = time.delta_secs();
                     for (_, mut transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-                            transform.translation = new_position;
+                           // transform.translation = new_position;
+                            transform
+                                .translation
+                                .smooth_nudge(&new_position, decay_rate, delta);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
                             );
-
                             break;
                         }
                     }
@@ -88,7 +94,7 @@ fn receiver_data(
                 if let Some(username) = information.get("username") {
                     // Supprimer l'entité du joueur
                     for (entity, _, player) in player_query.iter() {
-                        if player.username == *username {
+                        if player.username == username.trim() {
                             commands.entity(entity).despawn();
                         }
                     }
@@ -142,7 +148,7 @@ fn deserialize_player_positions(player_map: HashMap<String, String>) -> HashMap<
     let mut result: HashMap<String, Vec3> = HashMap::new();
 
     for (username, json_position) in player_map {
-        if username == "type" {
+        if username == "type" || username == "status" {
             continue; // Ignore l'entrée "type"
         }
 
