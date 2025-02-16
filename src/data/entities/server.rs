@@ -19,7 +19,7 @@ pub struct Server {
 
 pub trait ServerMethod {
     fn accept(&mut self, username: String, addr: String);
-    async fn broadcast(&self, data: HashMap<String, String>);
+    async fn broadcast(&self, data: HashMap<String, String>, addr_client: String);
     fn manage_levels(&self);
     async fn run(server: &mut Server);
     async fn response(&self, data: HashMap<String, String>, ip_adrrs: String, status: &str);
@@ -40,14 +40,19 @@ impl Server {
         }
     }
 
-    pub async fn check_username(&self, data: HashMap<String, String>) -> Result<(), Error> {
+    pub async fn check_username(
+        &self,
+        data: HashMap<String, String>,
+        addr: String,
+    ) -> Result<(), Error> {
         println!("len players {}", self.players.len());
         for player in self.players.iter() {
             println!("Checking player {}", player.username);
         }
         if let Some(username) = data.get("username") {
             if self.get_player_by_username(username).is_some() || username == "" {
-                self.response(data, self.network.address(), "Nom d'utilisateur incorrect ou déjà utilisé").await;
+                self.response(data, addr, "Nom d'utilisateur incorrect ou déjà utilisé")
+                    .await;
                 return Err(Error::new(
                     std::io::ErrorKind::NotConnected,
                     "Nom d'utilisateur incorrect ou déjà utilisé",
@@ -59,7 +64,7 @@ impl Server {
                 "Veuillez verifier le type",
             ));
         }
-        self.response(data, self.network.address(), "succes").await;
+        self.response(data, addr, "succes").await;
         Ok(())
     }
     pub fn game(&self) -> &Game {
@@ -77,26 +82,27 @@ impl Server {
 }
 
 impl ServerMethod for Server {
-   fn accept(&mut self, username: String, addr: String) {
-    let mut player = Player::default();
-    player.username = username.clone();
-    self.addr_clients.push(addr.clone());
-    self.players.push(player);
+    fn accept(&mut self, username: String, addr: String) {
+        let mut player = Player::default();
+        player.username = username.clone();
+        self.addr_clients.push(addr.clone());
+        self.players.push(player);
 
-    println!("Nouveau client : {}", username);
+        println!("Nouveau client : {} de {}", username, addr);
 
-    // Créer les données à diffuser
-    let mut data = HashMap::new();
-    data.insert("type".to_string(), "join".to_string()); // Type de message
-    data.insert("username".to_string(), username);       // Nom du joueur
-    data.insert("addr".to_string(), addr);               // Adresse du joueur
-
-    // Diffuser les données à tous les clients
-    self.broadcast(data);
-}
-    async fn broadcast(&self, data: HashMap<String, String>) {
+        // Créer les données à diffuser
+        let mut data = HashMap::new();
+        data.insert("type".to_string(), "join".to_string()); // Type de message
+        data.insert("username".to_string(), username); // Nom du joueur
+        data.insert("addr".to_string(), addr.clone()); // Adresse du joueur
+                                                       // Diffuser les données à tous les clients
+        self.broadcast(data, addr.clone());
+    }
+    async fn broadcast(&self, data: HashMap<String, String>, addr_client: String) {
         for addr in &self.addr_clients {
-            self.response(data.clone(), addr.clone(), "succes").await;
+            if addr.to_owned().trim() != addr_client.trim() {
+                self.response(data.clone(), addr.clone(), "succes").await;
+            }
         }
     }
 
@@ -124,7 +130,7 @@ impl ServerMethod for Server {
         match message {
             TypeMessage::Connection => {
                 let username = information.get("username").unwrap().to_string();
-                match self.check_username(information).await {
+                match self.check_username(information, addr.clone()).await {
                     Ok(()) => {
                         self.accept(username, addr.clone());
                     }
@@ -151,8 +157,9 @@ impl ServerMethod for Server {
             match server.network.receive().await {
                 Ok((message, addr)) => {
                     println!(
-                        "message decode : {:?}",
-                        serde_json::from_str::<HashMap<String, String>>(&message)
+                        "message decode : {:?} provenant de {}",
+                        serde_json::from_str::<HashMap<String, String>>(&message),
+                        addr
                     );
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
