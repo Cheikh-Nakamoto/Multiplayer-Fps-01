@@ -1,8 +1,8 @@
-use crate::data::entities::{
+use crate::{data::entities::{
     clients::Client,
     player::{self, Player},
     udp::{UDPMethod, UDP},
-};
+}, utils::create_move_resp::create_move_resp};
 use bevy::window::CursorGrabMode;
 
 use bevy::{
@@ -46,13 +46,7 @@ pub fn move_client_system(
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
             transform.translation.x -= translation_delta.x + left_right_delta.x;
             transform.translation.z -= translation_delta.z + left_right_delta.z;
-            let mut data = HashMap::new();
-            data.insert("type".to_string(), "movement".to_string());
-            data.insert("username".to_string(), client.username().clone());
-            data.insert("x".to_string(), transform.translation.x.to_string());
-            data.insert("y".to_string(), transform.translation.y.to_string());
-            data.insert("z".to_string(), transform.translation.z.to_string());
-
+            let  data = create_move_resp(client.username().clone(),transform.translation.x,transform.translation.y,transform.translation.z);
             let server_addr = client.server().clone();
             println!("Trying to send to server: {}", server_addr);
             std::thread::spawn(move || {

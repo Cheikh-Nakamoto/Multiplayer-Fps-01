@@ -1,5 +1,6 @@
 pub mod data;
 pub mod system;
+mod utils;
 
 use crate::data::entities::{
     game::Game,

@@ -1,14 +1,18 @@
-use crate::data::enums::type_msg::TypeMessage;
+use crate::{
+    data::enums::type_msg::TypeMessage,
+    utils::{
+        create_move_resp::create_move_resp,
+        get_field::{get_field, get_pos_player},
+    },
+};
 
 use super::{
-    clients::Client,
     game::Game,
     player::Player,
     udp::{UDPMethod, UDP},
 };
-use serde::Deserialize;
 use std::collections::HashMap;
-use std::{io::Error, net::UdpSocket};
+use std::io::Error;
 
 pub struct Server {
     pub addr_clients: Vec<String>,
@@ -18,17 +22,30 @@ pub struct Server {
 }
 
 pub trait ServerMethod {
-    fn accept(&mut self, username: String, addr: String);
-    async fn broadcast(&self, data: HashMap<String, String>, addr_client: String);
+    fn accept(
+        &mut self,
+        username: String,
+        addr: String,
+    ) -> impl std::future::Future<Output = ()> + Send;
+    fn broadcast(
+        &self,
+        data: HashMap<String, String>,
+        addr_client: String,
+    ) -> impl std::future::Future<Output = ()> + Send;
     fn manage_levels(&self);
-    async fn run(server: &mut Server);
-    async fn response(&self, data: HashMap<String, String>, ip_adrrs: String, status: &str);
-    async fn treatment_message(
+    fn run(server: &mut Server) -> impl std::future::Future<Output = ()> + Send;
+    fn response(
+        &self,
+        data: HashMap<String, String>,
+        ip_adrrs: String,
+        status: &str,
+    ) -> impl std::future::Future<Output = ()> + Send;
+    fn treatment_message(
         &mut self,
         adrr_client: String,
         data: TypeMessage,
         information: HashMap<String, String>,
-    );
+    ) -> impl std::future::Future<Output = ()> + Send;
 }
 impl Server {
     pub fn new(clients: Vec<String>, players: Vec<Player>, game: Game, network: UDP) -> Server {
@@ -82,13 +99,14 @@ impl Server {
 }
 
 impl ServerMethod for Server {
-    fn accept(&mut self, username: String, addr: String) {
+    async fn accept(&mut self, username: String, addr: String) {
         let mut player = Player::default();
         player.username = username.clone();
         self.addr_clients.push(addr.clone());
         self.players.push(player);
 
         println!("Nouveau client : {} de {}", username, addr);
+        println!("adress enregistre a la connexion: {:?}", &self.addr_clients);
 
         // Créer les données à diffuser
         let mut data = HashMap::new();
@@ -96,11 +114,13 @@ impl ServerMethod for Server {
         data.insert("username".to_string(), username); // Nom du joueur
         data.insert("addr".to_string(), addr.clone()); // Adresse du joueur
                                                        // Diffuser les données à tous les clients
-        self.broadcast(data, addr.clone());
+        self.broadcast(data, addr.clone()).await;
     }
     async fn broadcast(&self, data: HashMap<String, String>, addr_client: String) {
+        println!("broadcast to...");
         for addr in &self.addr_clients {
             if addr.to_owned().trim() != addr_client.trim() {
+                println!("====>... {}", addr);
                 self.response(data.clone(), addr.clone(), "succes").await;
             }
         }
@@ -127,20 +147,35 @@ impl ServerMethod for Server {
         message: TypeMessage,
         information: HashMap<String, String>,
     ) {
+        let username = get_field(information.clone(), "username");
         match message {
-            TypeMessage::Connection => {
-                let username = information.get("username").unwrap().to_string();
-                match self.check_username(information, addr.clone()).await {
-                    Ok(()) => {
-                        self.accept(username, addr.clone());
-                    }
-                    Err(e) => {
-                        dbg!("Error {}", e);
+            TypeMessage::Connection => match self.check_username(information, addr.clone()).await {
+                Ok(()) => {
+                    self.accept(username, addr.clone()).await;
+                }
+                Err(e) => {
+                    dbg!("Error {}", e);
+                }
+            },
+            TypeMessage::Movement => {
+                println!("adress des client: {:?}", &self.addr_clients);
+
+                let pos = get_pos_player(information);
+                println!("<======================================>");
+                println!("<===========Update user: {}============>", username);
+                for player in self.players.iter_mut() {
+                    if player.username == username {
+                        println!(
+                            "<===============player find in pos {:?}================>",
+                            pos
+                        );
+                        player.position = pos;
+                        break;
                     }
                 }
-            }
-            TypeMessage::Movement => {
-                println!("Movement");
+                println!("<===============finish================>");
+                let data = create_move_resp(username, pos.x, pos.y, pos.z);
+                self.broadcast(data, addr.clone()).await;
             }
             TypeMessage::Disconnection => {
                 println!("Disconnect");
