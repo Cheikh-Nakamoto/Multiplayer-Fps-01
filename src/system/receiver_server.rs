@@ -96,7 +96,7 @@ fn spawn_other_player(
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
         // Position et rotation (optionnel : ajout d'une rotation)
-        Transform::from_xyz(position.x, position.y, position.z).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(24.0, 2.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
         GlobalTransform::default(),
         // Composant personnalisé pour le joueur
         player,
