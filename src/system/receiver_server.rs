@@ -6,7 +6,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, Res, ResMut},
     },
-    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3, VectorSpace},
+    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
     time::Time,
@@ -32,8 +32,7 @@ fn receiver_data(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut udp_receiver: ResMut<UdpReceiver>,
-    mut player_query: Query<(Entity, &mut Transform, &Player)>, // Ajout de la requête ici
-    time: Res<Time>,
+    mut player_query: Query<(Entity, &mut Transform, &mut Player)>, // Ajout de la requête ici
 ) {
     // Lire les
 
@@ -70,12 +69,10 @@ fn receiver_data(
                     // Convertir la position en Vec3
                     let new_position = get_pos_player(information.clone());
                     // Mettre à jour la position du joueur
-                    // let decay_rate = f32::ln(5.0);
-                    // let delta = time.delta_secs();
-                    for (_, mut transform, player) in player_query.iter_mut() {
+                    for (_, mut transform, mut player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-
-                         transform.translation.lerp(new_position,0.05);
+                            transform.translation = new_position;
+                            player.position = transform.translation;
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
