@@ -145,6 +145,7 @@ impl ServerMethod for Server {
                                 self.response(player.clone(), addr.clone(), "succes").await;
                             }
                         }
+                        self.response(player, addr_client.clone(), "succes").await;
                         self.response(participants, addr_client.clone(), "succes").await;
 
                     },
