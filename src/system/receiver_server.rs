@@ -6,7 +6,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, Res, ResMut},
     },
-    math::{primitives::Cuboid, StableInterpolate, Vec3},
+    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
     time::Time,
@@ -70,14 +70,12 @@ fn receiver_data(
                     // Convertir la position en Vec3
                     let new_position = get_pos_player(information.clone());
                     // Mettre à jour la position du joueur
-                    let decay_rate = f32::ln(10.0);
-                    let delta = time.delta_secs();
+                    // let decay_rate = f32::ln(5.0);
+                    // let delta = time.delta_secs();
                     for (_, mut transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-                           // transform.translation = new_position;
-                            transform
-                                .translation
-                                .smooth_nudge(&new_position, decay_rate, delta);
+
+                         transform.translation = new_position;
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
