@@ -1,4 +1,5 @@
 use bevy::utils::HashMap;
+use serde_json::Value;
 
 use crate::{
     data::enums::type_msg::TypeMessage,
@@ -10,7 +11,7 @@ use crate::{
 
 use super::{
     game::Game,
-    player::Player,
+    player::{Player, PlayerGroup},
     udp::{UDPMethod, UDP},
 };
 use std::io::Error;
@@ -85,9 +86,6 @@ impl Server {
         self.response(data, addr, "succes").await;
         Ok(())
     }
-    pub fn game(&self) -> &Game {
-        &self.game
-    }
 
     fn get_player_by_username(&self, username: &str) -> Option<&Player> {
         for player in self.players.iter() {
@@ -97,6 +95,20 @@ impl Server {
         }
         None
     }
+    fn group_players_by_username(&self, curentjoin: String) -> HashMap<String, String> {
+        let mut player_map: HashMap<String, String> = HashMap::new();
+        for player in &self.players {
+            if curentjoin != player.username {
+                let str =  serde_json::to_string(&player.position());
+                player_map.insert(player.username.clone(),str.unwrap_or_default());
+            }
+        }
+       
+        player_map.insert("type".to_owned(),("participants".to_string()));
+
+        player_map
+    }
+
 }
 
 impl ServerMethod for Server {
@@ -112,9 +124,11 @@ impl ServerMethod for Server {
         // Créer les données à diffuser
         let mut data = HashMap::new();
         data.insert("type".to_string(), "join".to_string()); // Type de message
-        data.insert("username".to_string(), username); // Nom du joueur
+        data.insert("username".to_string(), username.clone()); // Nom du joueur
         data.insert("addr".to_string(), addr.clone()); // Adresse du joueur
-                                                       // Diffuser les données à tous les clients
+        let participants = self.group_players_by_username(username);
+        self.response(participants, addr.clone(), "succes").await;
+        // Diffuser les données à tous les clients
         self.broadcast(data, addr.clone()).await;
     }
     async fn broadcast(&self, data: HashMap<String, String>, addr_client: String) {
@@ -184,7 +198,7 @@ impl ServerMethod for Server {
             TypeMessage::Unknown => {
                 println!("Unknown");
             }
-            TypeMessage::Join => todo!(),
+            _ => todo!(),
         }
     }
 

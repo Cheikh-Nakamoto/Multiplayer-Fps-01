@@ -4,7 +4,8 @@ pub enum TypeMessage {
     Connection,
     Disconnection,
     Unknown,
-    Join
+    Join,
+    Participants
 }
 
 
@@ -16,6 +17,7 @@ impl TypeMessage {
             TypeMessage::Connection => "connection".to_string(),
             TypeMessage::Disconnection => "disconnection".to_string(),
             TypeMessage::Unknown => "unknown".to_string(),
+            TypeMessage::Participants => "participants".to_string(),
         }
     }
 }
@@ -27,6 +29,7 @@ impl From<&str> for TypeMessage {
             "join" => TypeMessage::Join,
             "connection" => TypeMessage::Connection,
             "disconnection" => TypeMessage::Disconnection,
+            "participants" => TypeMessage::Participants,
             _ => TypeMessage::Unknown,
         }
     }

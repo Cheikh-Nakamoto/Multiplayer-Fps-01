@@ -1,6 +1,6 @@
 // use crate::Vec3;
 use bevy::prelude::*;
-#[derive(Default,Debug, Component)]
+#[derive(Default,Debug,Clone, Component)]
 pub struct Player {
     pub username: String,
     pub position: Vec3,
@@ -8,6 +8,12 @@ pub struct Player {
     pub health: u32,
     pub movement_speed: f32,
     pub rotation_speed: f32,
+}
+
+#[derive(Debug, Clone)]
+pub struct  PlayerGroup {
+    pub player : Vec<Player>,
+    pub message:String,
 }
 
 impl Player {
@@ -21,6 +27,9 @@ impl Player {
             rotation_speed: f32::to_radians(360.0),
         }
     }
+
+ 
+
     pub fn position(&self) -> Vec3 {
         self.position
     }

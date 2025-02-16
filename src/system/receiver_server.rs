@@ -6,11 +6,11 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, ResMut},
     },
-    math::primitives::Cuboid,
+    math::{primitives::Cuboid, Vec3},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
     transform::components::Transform,
-    utils::default,
+    utils::{default, HashMap},
 };
 
 use crate::{
@@ -37,7 +37,7 @@ fn receiver_data(
     while let Ok(information) = udp_receiver.receiver.try_recv() {
         println!("Received data: {:?}", information);
         // Extraire le type de message
-        let type_msg = get_field(information.clone(),"type"); 
+        let type_msg = get_field(information.clone(), "type");
         match type_msg.as_str() {
             "join" => {
                 dbg!("<====================================================>\n\n");
@@ -51,7 +51,13 @@ fn receiver_data(
                 // Créer l'entité du joueur
                 dbg!("===============================preparing add other player======================================================================");
 
-                spawn_other_player(&mut commands, &mut meshes, &mut materials, username);
+                spawn_other_player(
+                    &mut commands,
+                    &mut meshes,
+                    &mut materials,
+                    username,
+                    Vec3::new(24.0, 2.5, 0.0),
+                );
             }
             "movement" => {
                 // Traiter l'événement "move"
@@ -87,6 +93,17 @@ fn receiver_data(
                     }
                 }
             }
+            "participants" => {
+                println!("Player left: {:?}", information);
+                // Traiter l'événement "leave"
+                let data = deserialize_player_positions(information);
+                for (cle, pos) in data {
+                    if &cle == "type" {
+                        continue;
+                    }
+                    spawn_other_player(&mut commands, &mut meshes, &mut materials, cle, pos);
+                }
+            }
             _ => {
                 println!("Unknown message type: {}", type_msg);
             }
@@ -99,8 +116,8 @@ fn spawn_other_player(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     username: String,
+    position: Vec3,
 ) {
-    dbg!("===============================add other player======================================================================");
     let mut player = Player::new();
     player.username = username;
     // Création du cube pour représenter le joueur
@@ -110,5 +127,31 @@ fn spawn_other_player(
         ..default()
     });
     // Créer l'entité du joueur
-    commands.spawn((Mesh3d(player_mesh), MeshMaterial3d(player_material), player));
+    commands.spawn((
+        Mesh3d(player_mesh),
+        MeshMaterial3d(player_material),
+        Transform::from_xyz(position.x, position.y, position.z).looking_at(Vec3::ZERO, Vec3::Y),
+        player,
+    ));
+}
+
+fn deserialize_player_positions(player_map: HashMap<String, String>) -> HashMap<String, Vec3> {
+    let mut result: HashMap<String, Vec3> = HashMap::new();
+
+    for (username, json_position) in player_map {
+        if username == "type" {
+            continue; // Ignore l'entrée "type"
+        }
+
+        match serde_json::from_str::<Vec3>(&json_position) {
+            Ok(position) => {
+                result.insert(username, position);
+            }
+            Err(e) => {
+                eprintln!("Erreur de désérialisation pour {}: {}", username, e);
+            }
+        }
+    }
+
+    result
 }
