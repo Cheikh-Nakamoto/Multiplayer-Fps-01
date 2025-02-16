@@ -26,7 +26,7 @@ fn main() -> Result<(), Error> {
         client.connect(username, ip_addr).await?;
         Ok::<_, Error>(client)
     })?;
-
+    let clone_client = client.clone();
     rt.spawn(async move {
         let udp = match UDP::create_socket_sender(8081).await {
             Ok(udp) => udp,
@@ -35,7 +35,10 @@ fn main() -> Result<(), Error> {
                 return;
             }
         };
-    
+        let mut hash = HashMap::new();
+        hash.insert("type", "participants");
+        let hash_to_str = serde_json::to_string(&hash).unwrap_or_default();
+        udp.send(hash_to_str, client.server()).await;
         loop {
             match udp.receive().await {
                 Ok((message, _)) => {
@@ -62,14 +65,14 @@ fn main() -> Result<(), Error> {
     });
 
     App::new()
-        .insert_resource(client)
+        .insert_resource(clone_client)
         .insert_resource(UdpReceiver { receiver })
         .insert_resource(AmbientLight {
             brightness: 100.0,
             ..default()
         })
         .add_systems(Startup, setup_mouse)
-        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(), ReceiverPlugin          
+        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(), BevyDevToolsPlugin,ReceiverPlugin ,OverlayColorPlugin         
         ))
         .add_systems(
             Update,

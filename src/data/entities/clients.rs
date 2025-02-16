@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::io;
 use std::io::Error;
 
-#[derive(Resource)]
+#[derive(Clone,Resource)]
 pub struct Client {
     username: String,
     player: Player,

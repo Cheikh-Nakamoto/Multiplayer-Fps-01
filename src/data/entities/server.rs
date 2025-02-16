@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     game::Game,
-    player::{Player, PlayerGroup},
+    player::{Player},
     udp::{UDPMethod, UDP},
 };
 use std::io::Error;
@@ -33,7 +33,6 @@ pub trait ServerMethod {
         &self,
         data: HashMap<String, String>,
         addr_client: String,
-        type_msg: TypeMessage
     ) -> impl std::future::Future<Output = ()> + Send;
     fn manage_levels(&self);
     fn run(server: &mut Server) -> impl std::future::Future<Output = ()> + Send;
@@ -84,7 +83,7 @@ impl Server {
                 "Veuillez verifier le type",
             ));
         }
-        // self.response(data, addr, "succes").await;
+        self.response(data, addr, "succes").await;
         Ok(())
     }
 
@@ -100,16 +99,15 @@ impl Server {
         let mut player_map: HashMap<String, String> = HashMap::new();
         for player in &self.players {
             if curentjoin != player.username {
-                let str =  serde_json::to_string(&player.position());
-                player_map.insert(player.username.clone(),str.unwrap_or_default());
+                let str = serde_json::to_string(&player.position());
+                player_map.insert(player.username.clone(), str.unwrap_or_default());
             }
         }
-       
-        player_map.insert("type".to_owned(),"participants".to_string());
+
+        player_map.insert("type".to_owned(), "participants".to_string());
 
         player_map
     }
-
 }
 
 impl ServerMethod for Server {
@@ -127,35 +125,26 @@ impl ServerMethod for Server {
         new_player_request.insert("type".to_string(), "join".to_string()); // Type de message
         new_player_request.insert("username".to_string(), username.clone()); // Nom du joueur
         new_player_request.insert("addr".to_string(), addr.clone()); // Adresse du joueur
-      
+
         let type_msg = TypeMessage::from("join");
         // self.response(participants, addr.clone(), "succes").await;
         // Diffuser les données à tous les clients
-        self.broadcast(new_player_request, addr.clone(), type_msg).await;
+        self.broadcast(new_player_request, addr.clone())
+            .await;
     }
-    async fn broadcast(&self, player: HashMap<String, String>, addr_client: String, type_msg: TypeMessage ) {
-                println!("broadcast to...");
-                let username = player.get("username").cloned().unwrap_or_default();
-                let participants = self.group_players_by_username(username);
-                match type_msg {
-                    TypeMessage::Join=> {
-                        for addr in &self.addr_clients {
-                            if addr.to_owned().trim() != addr_client.trim() {
-                                println!("====>... {}", addr);
-                                self.response(player.clone(), addr.clone(), "succes").await;
-                            }
-                        }
-                        self.response(player, addr_client.clone(), "succes").await;
-                        self.response(participants, addr_client.clone(), "succes").await;
-
-                    },
-                    _=> println!("{}", type_msg.to_string()),
-
-                }
-
-
-
+    async fn broadcast(
+        &self,
+        player: HashMap<String, String>,
+        addr_client: String,
+    ) {
+        println!("broadcast to...");
+        for addr in &self.addr_clients {
+            if addr.to_owned().trim() != addr_client.trim() {
+                println!("====>... {}", addr);
+                self.response(player.clone(), addr.clone(), "succes").await;
             }
+        }
+    }
 
     async fn response(&self, data: HashMap<String, String>, ip_adrrs: String, status: &str) {
         let mut msg: HashMap<String, String> = data
@@ -206,13 +195,19 @@ impl ServerMethod for Server {
                 }
                 println!("<===============finish================>");
                 let data = create_move_resp(username, pos.x, pos.y, pos.z);
-                self.broadcast(data, addr.clone(),TypeMessage::Movement).await;
+                self.broadcast(data, addr.clone())
+                    .await;
             }
             TypeMessage::Disconnection => {
                 println!("Disconnect");
             }
             TypeMessage::Unknown => {
                 println!("Unknown");
+            }
+            TypeMessage::Participants => {
+                let participants = self.group_players_by_username(username);
+                self.response(participants, addr, "succes")
+                    .await;
             }
             _ => todo!(),
         }
