@@ -1,6 +1,6 @@
 // use crate::Vec3;
 use bevy::prelude::*;
-#[derive(Default, Component)]
+#[derive(Default,Debug, Component)]
 pub struct Player {
     pub username: String,
     pub position: Vec3,

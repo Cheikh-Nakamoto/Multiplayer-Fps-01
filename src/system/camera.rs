@@ -1,4 +1,5 @@
 use bevy::app::Plugin;
+use bevy::ecs::system::Res;
 // use bevy::color::Color;
 use bevy::math::{Vec2, Vec3};
 // use bevy::pbr::{DistanceFog, FogFalloff};
@@ -12,6 +13,7 @@ use bevy_rapier3d::prelude::{
     Velocity,
 };
 
+use crate::data::entities::clients::Client;
 use crate::data::entities::player::Player;
 
 use super::camera_controller;
@@ -26,7 +28,9 @@ impl Plugin for CameraPlugins {
     }
 }
 
-fn spawn_camera_player(mut command: Commands) {
+fn spawn_camera_player(mut command: Commands, client: Res<Client>) {
+    let mut player = Player::new();
+    player.username = client.username();
     // A camera:
     command.spawn((
         Camera3d::default(),
@@ -37,7 +41,7 @@ fn spawn_camera_player(mut command: Commands) {
         },
         Transform::from_xyz(24.0, 2.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
         Ccd::enabled(),
-        Player::new(),
+        player,
         RigidBody::Dynamic,
         Collider::capsule(Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.5),
         ColliderMassProperties::Mass(1.0),
@@ -56,9 +60,6 @@ fn spawn_camera_player(mut command: Commands) {
             angular_damping: 1.0,
         },
         Velocity::zero(),
-        
         ActiveEvents::COLLISION_EVENTS,
-        
     ));
 }
-

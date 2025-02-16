@@ -8,7 +8,7 @@ use bevy::{
     },
     math::{primitives::Cuboid, Vec3},
     pbr::{MaterialMeshBundle, MeshMaterial3d, StandardMaterial},
-    render::mesh::{Mesh, Mesh3d},
+    render::{mesh::{Mesh, Mesh3d}, view::visibility},
     transform::components::{GlobalTransform, Transform}, utils::default,
 };
 
@@ -107,7 +107,7 @@ fn spawn_other_player(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     username: String,
 ) {
-    // Créer une instance de Player
+    dbg!("=====================================================================================================");
     let mut player = Player::new();
     player.username = username;
     // Création du cube pour représenter le joueur
@@ -116,7 +116,6 @@ fn spawn_other_player(
         base_color: Color::srgb(1., 0., 0.), // Couleur bleue
         ..default()
     });
-
     // Créer l'entité du joueur
     commands.spawn((
         Mesh3d(player_mesh),
@@ -124,3 +123,4 @@ fn spawn_other_player(
         player
     ));
 }
+

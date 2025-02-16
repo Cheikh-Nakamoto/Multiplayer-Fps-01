@@ -89,3 +89,4 @@ impl ClientMethods for Client {
         Ok((username, ip_addr))
     }
 }
+

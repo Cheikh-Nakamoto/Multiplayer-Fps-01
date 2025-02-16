@@ -74,9 +74,17 @@ fn main() -> Result<(), Error> {
         ))
         .add_systems(
             Update,
-            (move_client_system, update_camera_controller, control_cursor),
+            (move_client_system, update_camera_controller, control_cursor,debug_players),
         )
         .run();
 
     Ok(())
+}
+
+
+
+fn debug_players(query: Query<&Player>) {
+    for player in query.iter() {
+        println!("Player in scene: {:?}", player);
+    }
 }
