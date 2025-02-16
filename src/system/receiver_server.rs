@@ -6,7 +6,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, Res, ResMut},
     },
-    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3},
+    math::{primitives::Cuboid, Quat, StableInterpolate, Vec3, VectorSpace},
     pbr::{MeshMaterial3d, StandardMaterial},
     render::mesh::{Mesh, Mesh3d},
     time::Time,
@@ -75,7 +75,7 @@ fn receiver_data(
                     for (_, mut transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
 
-                         transform.translation = new_position;
+                         transform.translation.lerp(new_position,0.05);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position

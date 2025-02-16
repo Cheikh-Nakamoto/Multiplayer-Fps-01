@@ -1,7 +1,5 @@
 use bevy::{prelude::*, text::FontSmoothing};
-use bevy_dev_tools::{
-    fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
-};
+use bevy_dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin};
 
 pub struct OverlayColorPlugin;
 
