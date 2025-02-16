@@ -31,7 +31,10 @@ fn receiver_data(mut commands: Commands, mut udp_receiver: ResMut<UdpReceiver>) 
         if let Some(type_msg) = information.get("type") {
             match type_msg.as_str() {
                 "join" => {
-                    println!("Player joined: {:?}", information);
+                    println!("<====================================================>\n\n");
+                    println!("Player joined: {:?}\n", information);
+                    println!("<====================================================>\n\n");
+
                     // Traiter l'événement "join"
                     // Extraire le nom du joueur et sa position
                     let username = information
