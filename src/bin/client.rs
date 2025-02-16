@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use multiplayer_fps::data::entities::clients::{Client, ClientMethods};
+use multiplayer_fps::data::entities::clients::{ Client, ClientMethods };
 use multiplayer_fps::data::entities::player::Player;
-use multiplayer_fps::data::entities::udp::{UDPMethod, UdpReceiver, UDP};
+use multiplayer_fps::data::entities::udp::{ UDPMethod, UdpReceiver, UDP };
 use multiplayer_fps::system::camera::CameraPlugins;
 use multiplayer_fps::system::camera_controller::update_camera_controller;
-use multiplayer_fps::system::fps_tool::OverlayColorPlugin;
-use multiplayer_fps::system::functions_system::{control_cursor, move_client_system, setup_mouse};
+use multiplayer_fps::system::collision_detection::CollisionDetectionPlugin;
+use multiplayer_fps::system::functions_system::{ control_cursor, move_client_system, setup_mouse };
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
 use multiplayer_fps::system::receiver_server::ReceiverPlugin;
@@ -46,7 +46,7 @@ fn main() -> Result<(), Error> {
                     // Désérialiser le message en HashMap<String, String>
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
-                           println!("data .. {:?}",information);
+                            println!("data .. {:?}", information);
                             // Envoyer le HashMap via le canal
                             if sender.send(information).await.is_err() {
                                 eprintln!("Failed to send data to Bevy");
@@ -73,12 +73,17 @@ fn main() -> Result<(), Error> {
             ..default()
         })
         .add_systems(Startup, setup_mouse)
-        .add_plugins((DefaultPlugins,CameraPlugins,LigthPlugin,WorldConigPlugin, RapierPhysicsPlugin::<NoUserData>::default(), RapierDebugRenderPlugin::default(),ReceiverPlugin ,OverlayColorPlugin         
+        .add_plugins((
+            DefaultPlugins,
+            CameraPlugins,
+            LigthPlugin,
+            WorldConigPlugin,
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierDebugRenderPlugin::default(),
+            ReceiverPlugin,
+            CollisionDetectionPlugin
         ))
-        .add_systems(
-            Update,
-            (move_client_system, update_camera_controller, control_cursor),
-        )
+        .add_systems(Update, (move_client_system, update_camera_controller, control_cursor))
         .run();
 
     Ok(())

@@ -5,3 +5,5 @@ pub mod map;
 pub mod camera_controller;
 pub mod receiver_server;
 pub mod fps_tool;
+pub mod collision_detection;
+pub mod map_gen;
