@@ -33,11 +33,12 @@ fn receiver_data(
     mut udp_receiver: ResMut<UdpReceiver>,
     mut player_query: Query<(Entity, &mut Transform, &Player)>, // Ajout de la requête ici
 ) {
-    // Lire les données du canal
+    // Lire les
+   
     while let Ok(information) = udp_receiver.receiver.try_recv() {
-        println!("Received data: {:?}", information);
         // Extraire le type de message
         let type_msg = get_field(information.clone(), "type");
+        println!("Received data: {:?}", information);
         match type_msg.as_str() {
             "join" => {
                 dbg!("<====================================================>\n\n");
@@ -94,7 +95,9 @@ fn receiver_data(
                 }
             }
             "participants" => {
-                println!("Player left: {:?}", information);
+                dbg!("<====================================================>\n\n");
+                dbg!("Player participitants: {:?}\n", &information);
+                dbg!("<====================================================>\n\n");
                 // Traiter l'événement "leave"
                 let data = deserialize_player_positions(information);
                 for (cle, pos) in data {
@@ -130,7 +133,7 @@ fn spawn_other_player(
     commands.spawn((
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
-        Transform::from_xyz(position.x, position.y, position.z).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
         player,
     ));
 }

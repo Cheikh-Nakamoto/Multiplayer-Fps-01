@@ -13,14 +13,14 @@ use bevy::{
 use std::collections::HashMap;
 
 pub fn move_client_system(
-    mut query: Query<(&mut Transform, &Player)>,
+    mut query: Query<(&mut Transform, &mut Player)>,
     keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
     time: Res<Time>,
 ) {
     let step = 1.0;
 
-    for (mut transform, player) in query.iter_mut() {
+    for (mut transform,mut player) in query.iter_mut() {
         if player.username != client.username() {
             continue
         }
@@ -49,6 +49,7 @@ pub fn move_client_system(
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
             transform.translation.x -= translation_delta.x + left_right_delta.x;
             transform.translation.z -= translation_delta.z + left_right_delta.z;
+            player.position = transform.translation;
             let  data = create_move_resp(client.username().clone(),transform.translation.x,transform.translation.y,transform.translation.z);
             let server_addr = client.server().clone();
             println!("Trying to send to server: {}", server_addr);

@@ -42,7 +42,7 @@ fn main() -> Result<(), Error> {
                     // Désérialiser le message en HashMap<String, String>
                     match serde_json::from_str::<HashMap<String, String>>(&message) {
                         Ok(information) => {
-                           
+                           println!("data .. {:?}",information);
                             // Envoyer le HashMap via le canal
                             if sender.send(information).await.is_err() {
                                 eprintln!("Failed to send data to Bevy");
