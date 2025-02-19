@@ -1,18 +1,30 @@
 use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum CustomColliderType {
     Player,
     Obstacle,
     Bullet,
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Clone)]
 pub struct CustomCollider {
     pub radius: f32,
     pub collider_type: CustomColliderType,
-    pub colliding_entities: Vec<Entity>,
+    pub colliding_entities: Vec<Hitted>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Hitted {
+    pub entity: Entity,
+    pub collider: CustomCollider,
+}
+
+impl Hitted {
+    pub fn new(entity: Entity, collider: CustomCollider) -> Self {
+        Self { entity, collider }
+    }
 }
 
 impl CustomCollider {
@@ -61,7 +73,7 @@ impl Plugin for CollisionDetectionPlugin {
 /// }
 /// ```
 fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomCollider)>) {
-    let mut colliding_entities: HashMap<Entity, Vec<Entity>> = HashMap::new();
+    let mut colliding_entities: HashMap<Entity, Vec<Hitted>> = HashMap::new();
 
     // Detect collisions
     for (entity_a, transform_a, collider_a) in query.iter() {
@@ -74,7 +86,7 @@ fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomC
                     colliding_entities
                         .entry(entity_a)
                         .or_insert_with(Vec::new)
-                        .push(entity_b);
+                        .push(Hitted::new(entity_b, collider_b.clone()));
                 }
             }
         }
@@ -86,7 +98,7 @@ fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomC
         if let Some(collisions) = colliding_entities.get(&entity) {
             collider
                 .colliding_entities
-                .extend(collisions.iter().copied());
+                .extend(collisions.iter().cloned());
         }
     }
 }
@@ -98,13 +110,19 @@ pub fn handle_collisions(
 ) {
     for (collider, mut velocity) in query.iter_mut() {
         if !collider.colliding_entities.is_empty() {
-            if collider.collider_type != CustomColliderType::Bullet {
-                velocity.linvel = Vec3::ZERO;
-            } else {
+            // if collider.collider_type != CustomColliderType::Bullet {
+            //     velocity.linvel = Vec3::ZERO;
+            // } else {
                 
-                command.entity(collider.colliding_entities[0]).despawn();
+            //     command.entity(collider.colliding_entities[0]).despawn();
+            // }
+            for el in &collider.colliding_entities {
+                if collider.collider_type != CustomColliderType::Bullet && el.collider.collider_type == CustomColliderType::Bullet {
+                    command.entity(el.entity).despawn();
+                } else {
+                    velocity.linvel = Vec3::ZERO;
+                }
             }
-            
         }
     }
 }

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::{ActiveEvents, Collider};
+use bevy_rapier3d::prelude::ActiveEvents;
 use crate::data::entities::{clients::Client, player::Player};
 
 use super::collision_detection::{CustomCollider, CustomColliderType};
