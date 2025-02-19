@@ -30,8 +30,7 @@ pub trait ServerMethod {
     ) -> impl std::future::Future<Output = ()> + Send;
     fn broadcast(
         &self,
-        data: HashMap<String, String>,
-        addr_client: String,
+        data: HashMap<String, String>
     ) -> impl std::future::Future<Output = ()> + Send;
     fn manage_levels(&self);
     fn run(server: &mut Server) -> impl std::future::Future<Output = ()> + Send;
@@ -128,20 +127,13 @@ impl ServerMethod for Server {
         let _type_msg = TypeMessage::from("join");
         // self.response(participants, addr.clone(), "succes").await;
         // Diffuser les données à tous les clients
-        self.broadcast(new_player_request, addr.clone())
-            .await;
+        self.broadcast(new_player_request).await;
     }
-    async fn broadcast(
-        &self,
-        player: HashMap<String, String>,
-        addr_client: String,
-    ) {
+    async fn broadcast(&self, player: HashMap<String, String>) {
         println!("broadcast to...");
         for addr in &self.addr_clients {
-            if addr.to_owned().trim() != addr_client.trim() {
-                println!("====>... {}", addr);
-                self.response(player.clone(), addr.clone(), "succes").await;
-            }
+            println!("====>... {}", addr);
+            self.response(player.clone(), addr.clone(), "succes").await;
         }
     }
 
@@ -194,8 +186,7 @@ impl ServerMethod for Server {
                 }
                 println!("<===============finish================>");
                 let data = create_move_resp(username, pos.x, pos.y, pos.z);
-                self.broadcast(data, addr.clone())
-                    .await;
+                self.broadcast(data).await;
             }
             TypeMessage::Disconnection => {
                 println!("Disconnect");
@@ -205,8 +196,7 @@ impl ServerMethod for Server {
             }
             TypeMessage::Participants => {
                 let participants = self.group_players_by_username(username);
-                self.response(participants, addr, "succes")
-                    .await;
+                self.response(participants, addr, "succes").await;
             }
             _ => todo!(),
         }

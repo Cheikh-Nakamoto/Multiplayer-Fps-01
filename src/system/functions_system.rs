@@ -41,8 +41,8 @@ pub fn move_client_system(
         let left_right_delta = left_right_direction * left_right_distance;
 
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
-            transform.translation.x -= translation_delta.x + left_right_delta.x;
-            transform.translation.z -= translation_delta.z + left_right_delta.z;
+            // transform.translation.x -= translation_delta.x + left_right_delta.x;
+            // transform.translation.z -= translation_delta.z + left_right_delta.z;
 
             let data = create_move_resp(
                 client.username().clone(),
