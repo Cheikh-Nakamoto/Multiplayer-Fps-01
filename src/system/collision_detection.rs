@@ -102,7 +102,6 @@ fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomC
 
 /// Handles collisions by setting the linear velocity to zero for entities that are colliding.
 pub fn handle_collisions(
-    mut command: Commands,
     mut query: Query<(&CustomCollider, &mut Velocity)>,
     // Retirer With<MapBlock>
 ) {
