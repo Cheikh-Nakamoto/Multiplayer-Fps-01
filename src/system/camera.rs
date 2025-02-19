@@ -26,7 +26,7 @@ use crate::data::entities::clients::Client;
 use crate::data::entities::player::Player;
 
 use super::camera_controller;
-use super::collision_detection::{CustomCollider, CustomColliderType};
+use super::collision_detection::{CustomCollider, Nature};
 
 //const CAMERA_INIT_POS: f64 = 80.0;
 
@@ -96,6 +96,6 @@ fn spawn_camera_player(mut command: Commands, client: Res<Client>) {
             },
             velocity: Velocity::zero(),
             active_events: ActiveEvents::COLLISION_EVENTS,
-            custom_collider: CustomCollider::new(camera_object_radius, CustomColliderType::Player),
+            custom_collider: CustomCollider::new(camera_object_radius, Nature::Player(client.username())),
         });
 }
