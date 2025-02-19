@@ -1,5 +1,8 @@
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::{ActiveEvents, Collider};
 use crate::data::entities::{clients::Client, player::Player};
+
+use super::collision_detection::{CustomCollider, CustomColliderType};
 pub struct TracerPlugin;
 impl Plugin for TracerPlugin {
     fn build(&self, app: &mut App) {
@@ -51,6 +54,9 @@ fn shoot(
 
                 // Crée le projectile avec tous ses composants
                 commands.spawn((
+                    // Collider::ball(0.1),
+                    CustomCollider::new(0.1, CustomColliderType::Bullet),
+                    ActiveEvents::COLLISION_EVENTS,
                     BulletTracer::new(start_position, end_position, bullet_speed),
                     Mesh3d(meshes.add(Sphere::new(0.07).mesh().ico(7).unwrap())),
                     MeshMaterial3d(materials.add(StandardMaterial {
@@ -58,6 +64,8 @@ fn shoot(
                         alpha_mode: AlphaMode::Opaque,
                         ..default()
                     })),
+                    
+                    
                 ));
             }
         }

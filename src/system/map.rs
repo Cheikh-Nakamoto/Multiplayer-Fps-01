@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::{CoefficientCombineRule, Collider, Friction, Restitution, RigidBody};
 
-use super::{collision_detection::CustomCollider, map_gen::gen_map};
+use super::{collision_detection::{CustomCollider, CustomColliderType}, map_gen::gen_map};
 
 pub struct WorldConigPlugin;
 
@@ -28,7 +28,7 @@ pub fn world_config(
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
         Transform::from_xyz(0.0, 0.0, 0.0),
         Collider::cuboid(50.0, 0.8, 50.0),
-        CustomCollider::new(0.5),
+        CustomCollider::new(0.5, CustomColliderType::Obstacle),
     ));
 
     let wall_color1 = materials.add(Color::srgb(0.65, 0.32, 0.17));
@@ -55,7 +55,7 @@ pub fn world_config(
                     Transform::from_xyz(b.x, b.y, b.z),
                     Mesh3d(meshes.add(Cuboid::new(b.w, b.h, b.d))),
                     MeshMaterial3d(wall_color1.clone()),
-                    CustomCollider::new(b.w.max(b.d)+2.0),
+                    CustomCollider::new(b.w.max(b.d)+2.0, CustomColliderType::Obstacle),
                 ));
             }
         }

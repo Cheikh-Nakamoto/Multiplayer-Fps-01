@@ -1,17 +1,25 @@
-use bevy::{ prelude::*, utils::HashMap };
+use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier3d::prelude::*;
 
+#[derive(Debug, PartialEq)]
+pub enum CustomColliderType {
+    Player,
+    Obstacle,
+    Bullet,
+}
 
 #[derive(Component, Debug)]
 pub struct CustomCollider {
     pub radius: f32,
+    pub collider_type: CustomColliderType,
     pub colliding_entities: Vec<Entity>,
 }
 
 impl CustomCollider {
-    pub fn new(radius: f32) -> Self {
+    pub fn new(radius: f32, collider_type: CustomColliderType) -> Self {
         Self {
             radius,
+            collider_type,
             colliding_entities: vec![],
         }
     }
@@ -59,9 +67,14 @@ fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomC
     for (entity_a, transform_a, collider_a) in query.iter() {
         for (entity_b, transform_b, collider_b) in query.iter() {
             if entity_a != entity_b {
-                let distance = transform_a.translation().distance(transform_b.translation());
+                let distance = transform_a
+                    .translation()
+                    .distance(transform_b.translation());
                 if distance + 2.0 < collider_a.radius + collider_b.radius {
-                    colliding_entities.entry(entity_a).or_insert_with(Vec::new).push(entity_b);
+                    colliding_entities
+                        .entry(entity_a)
+                        .or_insert_with(Vec::new)
+                        .push(entity_b);
                 }
             }
         }
@@ -71,18 +84,27 @@ fn collisions_detection(mut query: Query<(Entity, &GlobalTransform, &mut CustomC
     for (entity, _, mut collider) in query.iter_mut() {
         collider.colliding_entities.clear();
         if let Some(collisions) = colliding_entities.get(&entity) {
-            collider.colliding_entities.extend(collisions.iter().copied());
+            collider
+                .colliding_entities
+                .extend(collisions.iter().copied());
         }
     }
 }
 
 pub fn handle_collisions(
-    mut query: Query<(&CustomCollider, &mut Velocity)> // Retirer With<MapBlock>
+    mut command: Commands,
+    mut query: Query<(&CustomCollider, &mut Velocity)>,
+    // Retirer With<MapBlock>
 ) {
     for (collider, mut velocity) in query.iter_mut() {
         if !collider.colliding_entities.is_empty() {
-            velocity.linvel = Vec3::ZERO;
-            // velocity.angvel = Vec3::ZERO;
+            if collider.collider_type != CustomColliderType::Bullet {
+                velocity.linvel = Vec3::ZERO;
+            } else {
+                
+                command.entity(collider.colliding_entities[0]).despawn();
+            }
+            
         }
     }
 }
