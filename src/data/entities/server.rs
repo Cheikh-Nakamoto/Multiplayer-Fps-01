@@ -96,12 +96,11 @@ impl Server {
     fn group_players_by_username(&self, curentjoin: String) -> HashMap<String, String> {
         let mut player_map: HashMap<String, String> = HashMap::new();
         for player in &self.players {
-            if curentjoin != player.username {
+            if curentjoin.trim() != player.username.trim() {
                 let str = serde_json::to_string(&player.position());
                 player_map.insert(player.username.clone(), str.unwrap_or_default());
             }
         }
-
         player_map.insert("type".to_owned(), "participants".to_string());
 
         player_map
@@ -117,17 +116,11 @@ impl ServerMethod for Server {
 
         println!("Nouveau client : {} de {}", username, addr);
         println!("adress enregistre a la connexion: {:?}", &self.addr_clients);
-
         // Créer les données à diffuser
-        let mut new_player_request = HashMap::new();
-        new_player_request.insert("type".to_string(), "join".to_string()); // Type de message
-        new_player_request.insert("username".to_string(), username.clone()); // Nom du joueur
-        new_player_request.insert("addr".to_string(), addr.clone()); // Adresse du joueur
-
+        let player_pos = create_move_resp(username.clone(),24.0,2.5,0.0,"join");
         let _type_msg = TypeMessage::from("join");
-        // self.response(participants, addr.clone(), "succes").await;
         // Diffuser les données à tous les clients
-        self.broadcast(new_player_request).await;
+        self.broadcast(player_pos).await;
     }
     async fn broadcast(&self, player: HashMap<String, String>) {
         println!("broadcast to...");
@@ -185,7 +178,7 @@ impl ServerMethod for Server {
                     }
                 }
                 println!("<===============finish================>");
-                let data = create_move_resp(username, pos.x, pos.y, pos.z);
+                let data = create_move_resp(username, pos.x, pos.y, pos.z,"movement");
                 self.broadcast(data).await;
             }
             TypeMessage::Disconnection => {

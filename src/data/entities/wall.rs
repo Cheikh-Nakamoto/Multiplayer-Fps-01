@@ -1,6 +1,6 @@
 // use bevy::render::render_resource::Texture;
 use crate::Vec3;
-
+#[derive(Default)]
 pub struct Wall {
     position: Vec3,
     width: f32,

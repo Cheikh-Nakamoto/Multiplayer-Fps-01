@@ -55,7 +55,7 @@ pub fn world_config(
                     Transform::from_xyz(b.x, b.y, b.z),
                     Mesh3d(meshes.add(Cuboid::new(b.w, b.h, b.d))),
                     MeshMaterial3d(wall_color1.clone()),
-                    CustomCollider::new(b.w.max(b.d)+2.0)
+                    CustomCollider::new(b.w.max(b.d)+2.0),
                 ));
             }
         }

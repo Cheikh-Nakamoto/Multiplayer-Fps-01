@@ -12,6 +12,8 @@ pub struct MapBlock {
     pub d: f32,
 }
 
+
+
 impl MapBlock {
     /// Renvoie true si le bloc est valide (dimensions non nulles)
     pub fn is_valid(&self) -> bool {

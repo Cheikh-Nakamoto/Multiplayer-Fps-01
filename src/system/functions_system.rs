@@ -41,14 +41,15 @@ pub fn move_client_system(
         let left_right_delta = left_right_direction * left_right_distance;
 
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
-            // transform.translation.x -= translation_delta.x + left_right_delta.x;
-            // transform.translation.z -= translation_delta.z + left_right_delta.z;
+            transform.translation.x -= translation_delta.x + left_right_delta.x;
+            transform.translation.z -= translation_delta.z + left_right_delta.z;
 
             let data = create_move_resp(
                 client.username().clone(),
                 transform.translation.x,
                 transform.translation.y,
-                transform.translation.z
+                transform.translation.z,
+                "movement"
             );
             let server_addr = client.server().clone();
             println!("Trying to send to server: {}", server_addr);

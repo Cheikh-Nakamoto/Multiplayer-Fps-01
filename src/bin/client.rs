@@ -6,10 +6,12 @@ use multiplayer_fps::data::entities::udp::*;
 use multiplayer_fps::system::camera::CameraPlugins;
 use multiplayer_fps::system::camera_controller::*;
 use multiplayer_fps::system::collision_detection::*;
+use multiplayer_fps::system::fps_tool::OverlayColorPlugin;
 use multiplayer_fps::system::functions_system::*;
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
 use multiplayer_fps::system::receiver_server::ReceiverPlugin;
+use multiplayer_fps::system::shoot_player::TracerPlugin;
 use tokio::sync::mpsc;
 use std::io::Error;
 use tokio::runtime::Runtime;
@@ -18,11 +20,13 @@ use bevy_rapier3d::prelude::*;
 // #[tokio::main]
 
 fn main() -> Result<(), Error> {
+    let mut user = String::new();
     let rt = Runtime::new().unwrap();
     // Créer un canal pour communiquer entre l'asynchrone et Bevy
     let (sender, receiver) = mpsc::channel(32);
     let client = rt.block_on(async {
         let (username, ip_addr) = Client::collect()?;
+        user = username.clone();
         let mut client = Client::new(username.clone(), Player::default(), ip_addr.clone());
         client.connect(username, ip_addr).await?;
         Ok::<_, Error>(client)
@@ -38,6 +42,7 @@ fn main() -> Result<(), Error> {
         };
         let mut hash = HashMap::new();
         hash.insert("type", "participants");
+        hash.insert("username", user.as_str());
         let hash_to_str = serde_json::to_string(&hash).unwrap_or_default();
         let _ = udp.send(hash_to_str, client.server()).await;
         loop {
@@ -82,6 +87,8 @@ fn main() -> Result<(), Error> {
             RapierDebugRenderPlugin::default(),
             ReceiverPlugin,
             CollisionDetectionPlugin,
+            TracerPlugin,
+            OverlayColorPlugin
         ))
         .add_systems(Update, (
             move_client_system,

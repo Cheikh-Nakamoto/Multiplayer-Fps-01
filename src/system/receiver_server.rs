@@ -12,6 +12,7 @@ use bevy::{
     transform::components::Transform,
     utils::{default, HashMap},
 };
+use bevy_rapier3d::prelude:: RigidBody;
 
 use crate::{
     data::entities::{player::Player, udp::UdpReceiver},
@@ -70,8 +71,7 @@ fn receiver_data(
                     // Mettre à jour la position du joueur
                     for (_, transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-
-                         let _ = transform.translation.lerp(new_position,0.05);
+                            let _ = transform.translation.lerp(new_position, 0.1);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
@@ -101,7 +101,7 @@ fn receiver_data(
                 // Traiter l'événement "leave"
                 let data = deserialize_player_positions(information);
                 for (cle, pos) in data {
-                    if &cle == "type" {
+                    if &cle == "type" || &cle == "statut" {
                         continue;
                     }
                     spawn_other_player(&mut commands, &mut meshes, &mut materials, cle, pos);
@@ -131,10 +131,12 @@ fn spawn_other_player(
     });
     // Créer l'entité du joueur
     commands.spawn((
+        RigidBody::Dynamic,
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
         Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
         player,
+
     ));
 }
 
