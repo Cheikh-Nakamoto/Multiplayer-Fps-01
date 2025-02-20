@@ -77,8 +77,8 @@ fn shoot(
 fn update_tracers(
     mut commands: Commands,
     mut tracer_query: Query<(&mut BulletTracer, &mut Transform, Entity, &mut CustomCollider)>,
-    time: Res<Time>
-    // client: Res<Client>
+    time: Res<Time>,
+    client: Res<Client>
 ) {
     // Pour chaque projectile existant
     for (mut tracer, mut transform, entity, mut collider) in tracer_query.iter_mut() {
@@ -94,16 +94,28 @@ fn update_tracers(
         // Oriente le projectile vers sa destination
         transform.look_at(tracer.end_position, Vec3::Y);
 
-        let target_hitted =
-        collider.nature == Nature::Bullet &&
-        !collider.colliding_entities.is_empty() &&
-        collider.colliding_entities[0].1 == Nature::Wall;
+        if !collider.colliding_entities.is_empty() {
+            let is_ennemy = match collider.colliding_entities[0].1.clone() {
+                Nature::Player(s) if s != client.username() => true,
+                _ => false,
+            };
+    
+            let target_hitted =
+            collider.nature == Nature::Bullet &&
+            collider.colliding_entities[0].1 == Nature::Wall;
+    
+            // Supprime le projectile si sa durée de vie est dépassée
+            // ou si une balle atteint un obstacle
+            if tracer.time_alive > tracer.lifetime || target_hitted {
+                commands.entity(entity).despawn();
+            }
 
-        // Supprime le projectile si sa durée de vie est dépassée
-        // ou si une balle atteint une cible
-        if tracer.time_alive > tracer.lifetime || target_hitted {
-            commands.entity(entity).despawn();
+            // Supprime le projectile et l'ennemi lorsque ce dernier est touché
+            if is_ennemy {
+                commands.entity(entity).despawn();
+                commands.entity(collider.colliding_entities[0].0).despawn();
+            }
+            collider.colliding_entities.clear();
         }
-        collider.colliding_entities.clear();
     }
 }

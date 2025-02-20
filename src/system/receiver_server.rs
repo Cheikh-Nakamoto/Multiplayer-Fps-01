@@ -19,6 +19,8 @@ use crate::{
     utils::get_field::{get_field, get_pos_player},
 };
 
+use super::collision_detection::{CustomCollider, Nature};
+
 pub struct ReceiverPlugin;
 
 impl Plugin for ReceiverPlugin {
@@ -122,7 +124,7 @@ fn spawn_other_player(
     position: Vec3,
 ) {
     let mut player = Player::new();
-    player.username = username;
+    player.username = username.clone();
     // Création du cube pour représenter le joueur
     let player_mesh = meshes.add(Cuboid::new(2.0, 1.5, 2.0)); // Mesh pour un cube
     let player_material = materials.add(StandardMaterial {
@@ -135,6 +137,7 @@ fn spawn_other_player(
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
         Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
+        CustomCollider::new(1.0, Nature::Player(username)),
         player,
     ));
 }
