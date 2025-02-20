@@ -1,5 +1,9 @@
 use crate::{
-    data::entities::{ clients::Client, player::Player, udp::{ UDPMethod, UDP } },
+    data::entities::{
+        clients::Client,
+        player::Player,
+        udp::{UDPMethod, UDP},
+    },
     utils::create_move_resp::create_move_resp,
 };
 use bevy::window::CursorGrabMode;
@@ -10,7 +14,7 @@ pub fn move_client_system(
     mut query: Query<(&mut Transform, &mut Player)>,
     keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
     let step = 1.0;
 
@@ -41,16 +45,17 @@ pub fn move_client_system(
         let left_right_delta = left_right_direction * left_right_distance;
 
         if translation_delta != Vec3::ZERO || left_right_delta != Vec3::ZERO {
-            // transform.translation.x -= translation_delta.x + left_right_delta.x;
-            // transform.translation.z -= translation_delta.z + left_right_delta.z;
+            let x = transform.translation.x - (translation_delta.x + left_right_delta.x);
+            let z = transform.translation.z - (translation_delta.z + left_right_delta.z);
 
             let data = create_move_resp(
                 client.username().clone(),
-                transform.translation.x,
+                x,
                 transform.translation.y,
-                transform.translation.z,
-                "movement"
+                z,
+                "movement",
             );
+            player.position = transform.translation;
             let server_addr = client.server().clone();
             println!("Trying to send to server: {}", server_addr);
             std::thread::spawn(move || {
@@ -68,7 +73,6 @@ pub fn move_client_system(
                     }
                 });
             });
-            player.position = transform.translation;
         }
     }
 }
