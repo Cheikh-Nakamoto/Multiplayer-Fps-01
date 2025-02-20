@@ -60,7 +60,7 @@ fn receiver_data(
                     &mut meshes,
                     &mut materials,
                     username,
-                    Vec3::new(24.0, 2.5, 0.0),
+                    Vec3::new(24.0, 3.0, 0.0),
                 );
             }
             "movement" => {
@@ -137,7 +137,7 @@ fn spawn_other_player(
         RigidBody::Dynamic,
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
-        Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(position.x, 3.0, position.z).looking_at(Vec3::ZERO, Vec3::Y),
         CustomCollider::new(1.0, Nature::Player(username.clone())),
         player,
     ));

@@ -117,7 +117,7 @@ impl ServerMethod for Server {
         println!("Nouveau client : {} de {}", username, addr);
         println!("adress enregistre a la connexion: {:?}", &self.addr_clients);
         // Créer les données à diffuser
-        let player_pos = create_move_resp(username.clone(),24.0,2.5,0.0,"join");
+        let player_pos = create_move_resp(username.clone(),24.0,3.0,0.0,"join");
         let _type_msg = TypeMessage::from("join");
         // Diffuser les données à tous les clients
         self.broadcast(player_pos).await;
