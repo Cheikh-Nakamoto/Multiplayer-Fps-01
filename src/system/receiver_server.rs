@@ -136,7 +136,6 @@ fn spawn_other_player(
         MeshMaterial3d(player_material),
         Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
         player,
-
     ));
 }
 
