@@ -71,9 +71,9 @@ fn receiver_data(
                     // Convertir la position en Vec3
                     let new_position = get_pos_player(information.clone());
                     // Mettre à jour la position du joueur
-                    for (_, transform, player) in player_query.iter_mut() {
+                    for (_,  mut transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-                            let _ = transform.translation.lerp(new_position, 0.1);
+                            transform.translation = transform.translation.lerp(new_position, 0.1);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
@@ -124,22 +124,24 @@ fn spawn_other_player(
     position: Vec3,
 ) {
     let mut player = Player::new();
-    player.username = username.clone();
+    player.username = username.trim().to_string();
     // Création du cube pour représenter le joueur
     let player_mesh = meshes.add(Cuboid::new(2.0, 1.5, 2.0)); // Mesh pour un cube
     let player_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0., 0.), // Couleur bleue
         ..default()
     });
+
     // Créer l'entité du joueur
     commands.spawn((
         RigidBody::Dynamic,
         Mesh3d(player_mesh),
         MeshMaterial3d(player_material),
         Transform::from_xyz(position.x, 2.5, position.z).looking_at(Vec3::ZERO, Vec3::Y),
-        CustomCollider::new(1.0, Nature::Player(username)),
+        CustomCollider::new(1.0, Nature::Player(username.clone())),
         player,
     ));
+    println!("&&&&&&&&&&&&&&&&&&&&&&&&& player add succesfully :{}",username);
 }
 
 fn deserialize_player_positions(player_map: HashMap<String, String>) -> HashMap<String, Vec3> {
