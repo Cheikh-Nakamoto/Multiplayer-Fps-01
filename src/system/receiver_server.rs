@@ -73,7 +73,7 @@ fn receiver_data(
                     // Mettre à jour la position du joueur
                     for (_,  mut transform, player) in player_query.iter_mut() {
                         if player.username == username.trim() {
-                            transform.translation = transform.translation.lerp(new_position, 0.4);
+                            transform.translation = transform.translation.lerp(new_position, 0.2);
                             println!(
                                 "<===========Movement update successfully: {:?}============>",
                                 new_position
