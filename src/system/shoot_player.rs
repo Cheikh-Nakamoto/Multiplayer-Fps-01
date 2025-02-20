@@ -45,12 +45,12 @@ fn shoot(
         if let Ok((player_transform, player)) = query.get_single() {
             // Vérifie si c'est le bon joueur
             if client.username() == player.username {
-                let offset_distance = 2.0;
+                let offset_distance = 0.1;
                 let shoot_direction = player_transform.forward(); // Direction du tir
                 let start_position =
                     player_transform.translation + shoot_direction * offset_distance; // Position de départ
                 let end_position = start_position + shoot_direction * 50.0; // Position d'arrivée
-                let bullet_speed = 20.0; // Vitesse du projectile
+                let bullet_speed = 500.0; // Vitesse du projectile
                 let base_color = Color::srgb(0.9, 0.2, 0.3); // Couleur rouge
 
                 // Crée le projectile avec tous ses composants
@@ -58,7 +58,7 @@ fn shoot(
                     // Collider::ball(0.1),
                     ActiveEvents::COLLISION_EVENTS,
                     BulletTracer::new(start_position, end_position, bullet_speed),
-                    Mesh3d(meshes.add(Sphere::new(0.07).mesh().ico(7).unwrap())),
+                    Mesh3d(meshes.add(Sphere::new(0.05).mesh().ico(7).unwrap())),
                     MeshMaterial3d(
                         materials.add(StandardMaterial {
                             base_color,

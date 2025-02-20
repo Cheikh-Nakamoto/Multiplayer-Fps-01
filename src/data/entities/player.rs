@@ -23,7 +23,7 @@ impl Player {
             position: Vec3::ZERO,
             dimension: Vec3::ZERO,
             health: 1000,
-            movement_speed: 5.0,
+            movement_speed: 10.0,
             rotation_speed: f32::to_radians(360.0),
         }
     }
