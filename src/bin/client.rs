@@ -70,6 +70,9 @@ fn main() -> Result<(), Error> {
         }
     });
 
+    let mut render_plugin = RapierDebugRenderPlugin::default();
+    render_plugin.default_collider_debug = ColliderDebug::NeverRender;
+
     App::new()
         .insert_resource(clone_client)
         .insert_resource(UdpReceiver { receiver })
@@ -84,7 +87,7 @@ fn main() -> Result<(), Error> {
             LigthPlugin,
             WorldConigPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
+            render_plugin,
             ReceiverPlugin,
             CollisionDetectionPlugin,
             TracerPlugin,
