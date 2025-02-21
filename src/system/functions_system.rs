@@ -11,14 +11,14 @@ use bevy::window::CursorGrabMode;
 use bevy::prelude::*;
 
 pub fn move_client_system(
-    mut query: Query<(&mut Transform, &mut Player)>,
+    mut query: Query<(&Transform, &mut Player)>,
     keyboard: Res<ButtonInput<KeyCode>>,
     client: Res<Client>,
     time: Res<Time>,
 ) {
     let step = 1.0;
 
-    for (mut transform, mut player) in query.iter_mut() {
+    for (transform, mut player) in query.iter_mut() {
         if player.username != client.username() {
             continue;
         }

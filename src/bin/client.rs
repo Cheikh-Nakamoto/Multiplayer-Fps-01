@@ -10,6 +10,7 @@ use multiplayer_fps::system::fps_tool::OverlayColorPlugin;
 use multiplayer_fps::system::functions_system::*;
 use multiplayer_fps::system::light::LigthPlugin;
 use multiplayer_fps::system::map::WorldConigPlugin;
+use multiplayer_fps::system::minimap::MinimapPlugin;
 use multiplayer_fps::system::receiver_server::ReceiverPlugin;
 use multiplayer_fps::system::shoot_player::TracerPlugin;
 use tokio::sync::mpsc;
@@ -91,7 +92,8 @@ fn main() -> Result<(), Error> {
             ReceiverPlugin,
             CollisionDetectionPlugin,
             TracerPlugin,
-            OverlayColorPlugin
+            OverlayColorPlugin,
+            MinimapPlugin
         ))
         .add_systems(Update, (
             move_client_system,
